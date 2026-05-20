@@ -175,12 +175,33 @@ This project is full-stack, so static hosting alone is not enough for the comple
    - Configure `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, and `CSRF_TRUSTED_ORIGINS`  
    - Run migrations during deployment
 
-3. **Database**: Use Neon Postgres (serverless)  
-    - Set `DATABASE_URL` in backend environment variables  
+3. **Database**: Use [Neon](https://neon.tech) (serverless Postgres)  
+    - Create a free Neon project and database  
+    - Copy the pooled connection string  
+    - Set `DATABASE_URL=postgresql://...` in backend environment variables  
     - Keep SSL enabled (`sslmode=require`)
 
 4. **Smoke Test**  
-   - Verify `/api/health/`, login flow, course/exam creation, and results upload/analytics
+    - Verify `/api/health/`, login flow, course/exam creation, and results upload/analytics
+
+### Render Deployment (Backend)
+
+1. Create a new **Web Service** on [Render](https://render.com)
+2. Connect your GitHub repo and set:
+   - **Root Directory**: `app/backend`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `gunicorn examvault.wsgi:application --bind 0.0.0.0:$PORT`
+   - **Environment**: Python 3.11
+3. Add environment variables (see `.env.example`)
+
+### Vercel Deployment (Frontend)
+
+1. Import your GitHub repo on [Vercel](https://vercel.com)
+2. Set:
+   - **Root Directory**: `app/frontend`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+3. Add environment variable: `VITE_API_BASE_URL=https://<your-render-domain>/api`
 
 ### Environment Variables
 

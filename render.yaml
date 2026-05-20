@@ -18,11 +18,11 @@ services:
       - key: CORS_ALLOW_ALL_ORIGINS
         value: "False"
       - key: CORS_ALLOWED_ORIGINS
-        sync: false
+        value: https://exam-vault-five.vercel.app
       - key: CSRF_TRUSTED_ORIGINS
-        sync: false
+        value: https://exam-vault-five.vercel.app
       - key: FRONTEND_URL
-        sync: false
+        value: https://exam-vault-five.vercel.app
       - key: DATABASE_URL
         sync: false
       - key: DB_SSL_REQUIRED

@@ -90,6 +90,15 @@ export const Home = () => {
       {/* Footer */}
       <footer className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
         © {new Date().getFullYear()} ExamVault. All rights reserved.
+        <br />
+        <a
+          href="https://github.com/RikepilB/ExamVault"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          View on GitHub
+        </a>
       </footer>
     </div>
   );

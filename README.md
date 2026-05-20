@@ -15,7 +15,7 @@ Intelligent exam management platform for educators. Create, manage, and analyze 
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/RikepilB/ExamVault.git
 cd ExamVault
 
 # Start all services

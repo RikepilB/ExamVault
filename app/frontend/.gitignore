@@ -34,3 +34,4 @@ app/backend/**/*.zip
 
 # Django media files in general (if not already there)
 media/
+.vercel

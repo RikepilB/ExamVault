@@ -10,9 +10,20 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from scipy import stats
 
 from analytics.models import SimilarityFlag
+
+
+def np_skew(x):
+    n = len(x)
+    if n < 3:
+        return 0.0
+    m2 = np.mean((x - np.mean(x)) ** 2)
+    m3 = np.mean((x - np.mean(x)) ** 3)
+    if m2 == 0:
+        return 0.0
+    g1 = m3 / (m2 ** 1.5)
+    return float(g1 * np.sqrt(n * (n - 1)) / (n - 2))
 from courses.models import Course, CourseInstructor, Student
 from exams.models import Exam, Variant, VariantQuestion
 from questions.models import Question, QuestionBank
@@ -703,7 +714,7 @@ class PerformanceMetricsView(APIView):
 
                     # Calculate skewness only if we have enough data points
                     if len(scores) > 2:
-                        skewness = stats.skew(scores)
+                        skewness = np_skew(scores)
                     else:
                         skewness = 0.0
 

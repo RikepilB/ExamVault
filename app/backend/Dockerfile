@@ -25,5 +25,8 @@ RUN mkdir -p /app/logs && chmod 777 /app/logs
 RUN dos2unix entrypoint.sh
 RUN chmod +x entrypoint.sh
 
-# Default CMD (can be overridden by docker-compose.yml)
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# entrypoint.sh runs migrations, optional superuser seed, then execs gunicorn.
+# Set as ENTRYPOINT so this happens for any deployment of this image
+# (docker-compose currently overrides entrypoint to the same script; a bare
+# `docker run`/Railway build now gets the identical, production-safe startup).
+ENTRYPOINT ["bash", "./entrypoint.sh"]

@@ -10,6 +10,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -80,6 +81,8 @@ class RegisterAPIView(APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_register"
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -169,6 +172,8 @@ class VerifyEmailAPIView(APIView):
 class ForgotPasswordAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_forgot_password"
 
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
@@ -280,6 +285,8 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     """Custom JWT login view that tracks last_login"""
 
     serializer_class = CustomTokenObtainPairSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_login"
 
 
 class LogoutView(APIView):

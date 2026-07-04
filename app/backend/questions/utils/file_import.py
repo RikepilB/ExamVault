@@ -72,6 +72,14 @@ except ImportError:
     DOCX_AVAILABLE = False
 
 
+# Bounds on import parsing — the global DATA_UPLOAD_MAX_MEMORY_SIZE setting caps
+# the raw upload, but a file just under that limit can still contain enough
+# pages/rows to make these parsers slow; cap them explicitly too.
+MAX_CSV_ROWS = 5000
+MAX_PDF_PAGES = 200
+MAX_DOCX_PARAGRAPHS = 5000
+
+
 def get_file_type(filename: str) -> str:
     """Get file type from filename extension"""
     if filename.lower().endswith(".csv"):
@@ -113,6 +121,10 @@ def parse_csv_file(uploaded_file) -> List[Dict[str, Any]]:
     questions = []
 
     for i, row in enumerate(reader, start=1):
+        if i > MAX_CSV_ROWS:
+            raise ValueError(
+                f"CSV has more than {MAX_CSV_ROWS} rows — split it into smaller files."
+            )
         try:
             # Basic field extraction
             text = row.get("prompt", "").strip()
@@ -182,6 +194,10 @@ def parse_pdf_file(uploaded_file) -> List[Dict[str, Any]]:
     try:
         # Try with pdfplumber first (better text extraction)
         with pdfplumber.open(uploaded_file.file) as pdf:
+            if len(pdf.pages) > MAX_PDF_PAGES:
+                raise ValueError(
+                    f"PDF has more than {MAX_PDF_PAGES} pages — split it into smaller files."
+                )
             for page in pdf.pages:
                 text = page.extract_text()
                 if text:
@@ -191,6 +207,10 @@ def parse_pdf_file(uploaded_file) -> List[Dict[str, Any]]:
         try:
             uploaded_file.file.seek(0)  # Reset file pointer
             pdf_reader = PyPDF2.PdfReader(uploaded_file.file)
+            if len(pdf_reader.pages) > MAX_PDF_PAGES:
+                raise ValueError(
+                    f"PDF has more than {MAX_PDF_PAGES} pages — split it into smaller files."
+                )
             for page in pdf_reader.pages:
                 page_text = page.extract_text()
                 if page_text:
@@ -222,6 +242,10 @@ def parse_docx_file(uploaded_file) -> List[Dict[str, Any]]:
 
     try:
         doc = Document(uploaded_file.file)
+        if len(doc.paragraphs) > MAX_DOCX_PARAGRAPHS:
+            raise ValueError(
+                f"DOCX has more than {MAX_DOCX_PARAGRAPHS} paragraphs — split it into smaller files."
+            )
         full_text = ""
         for paragraph in doc.paragraphs:
             if paragraph.text.strip():  # Only add non-empty paragraphs

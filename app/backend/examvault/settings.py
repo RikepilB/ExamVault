@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",  # Django REST framework for building APIs
     "rest_framework_simplejwt",  # JWT authentication for REST framework
+    "rest_framework_simplejwt.token_blacklist",  # revoke refresh tokens on rotation/logout
     "users",  # Custom app for user management
     "exams",  # Custom app for exam management
     "questions",  # Custom app for question management
@@ -72,6 +73,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "examvault.request_id.RequestIdMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -174,10 +176,35 @@ REST_FRAMEWORK = {
     ),
 }
 
+# --- Rate limiting for sensitive auth endpoints (pre-launch hardening) ---
+# ScopedRateThrottle only throttles a view that explicitly sets
+# `throttle_scope`, so this has no effect on any other view.
+REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = [
+    "rest_framework.throttling.ScopedRateThrottle",
+]
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {
+    "auth_register": "10/min",
+    "auth_login": "5/min",
+    "auth_forgot_password": "5/min",
+    "auth_admin_login": "5/min",
+    "auth_admin_refresh": "10/min",
+}
+# --- end rate limiting block ---
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
+
+# --- Upload / body size limits (pre-launch hardening) ---
+# Django defaults (2.5MB) are already conservative, but the app has no
+# explicit ceiling documented anywhere; set one deliberately rather than
+# relying on the framework default silently.
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("DATA_UPLOAD_MAX_MEMORY_SIZE", 10 * 1024 * 1024))  # 10 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("FILE_UPLOAD_MAX_MEMORY_SIZE", 10 * 1024 * 1024))  # 10 MB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = int(os.getenv("DATA_UPLOAD_MAX_NUMBER_FIELDS", 5000))
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -196,6 +223,14 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

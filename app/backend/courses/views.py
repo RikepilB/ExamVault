@@ -763,9 +763,14 @@ class CourseViewSet(viewsets.ModelViewSet):
 
             zip_buffer.seek(0)
 
-            # Generate unique filename
+            # Generate unique filename (course.code is user-editable free text,
+            # so sanitize it the same way exam/bank titles already are before
+            # it feeds a storage path or a Content-Disposition header)
             job_id = str(uuid.uuid4())
-            filename = f"exports/course_{course.id}/{job_id}_{course.code}_export_{format_type}_{datetime.now().strftime('%Y%m%d')}.zip"
+            safe_course_code = "".join(
+                c for c in course.code if c.isalnum() or c in (" ", "-", "_")
+            ).rstrip()
+            filename = f"exports/course_{course.id}/{job_id}_{safe_course_code}_export_{format_type}_{datetime.now().strftime('%Y%m%d')}.zip"
 
             # Save file to storage
             file_content = ContentFile(zip_buffer.getvalue())
@@ -788,7 +793,7 @@ class CourseViewSet(viewsets.ModelViewSet):
                 zip_buffer.getvalue(), content_type="application/zip"
             )
             response["Content-Disposition"] = (
-                f'attachment; filename="{course.code}_export_{format_type}_{datetime.now().strftime("%Y%m%d")}.zip"'
+                f'attachment; filename="{safe_course_code}_export_{format_type}_{datetime.now().strftime("%Y%m%d")}.zip"'
             )
             return response
 
@@ -833,10 +838,13 @@ class CourseViewSet(viewsets.ModelViewSet):
             return Response({"error": "Export file not found"}, status=404)
 
         # Serve the file
+        safe_course_code = "".join(
+            c for c in course.code if c.isalnum() or c in (" ", "-", "_")
+        ).rstrip()
         file_content = default_storage.open(export_record.file_path, "rb").read()
         response = HttpResponse(file_content, content_type="application/zip")
         response["Content-Disposition"] = (
-            f'attachment; filename="{course.code}_export_{export_record.export_format}_{export_record.created_at.strftime("%Y%m%d")}.zip"'
+            f'attachment; filename="{safe_course_code}_export_{export_record.export_format}_{export_record.created_at.strftime("%Y%m%d")}.zip"'
         )
         return response
 
@@ -3088,6 +3096,13 @@ class PreviewImportQuestions(APIView):
             course = Course.objects.get(pk=course_id)
         except Course.DoesNotExist:
             return Response({"error": "Course not found"}, status=404)
+
+        # Check permissions - only instructors of this course may preview its
+        # question banks (prevents cross-course question-bank leakage).
+        if not CourseInstructor.objects.filter(
+            course=course, user=request.user, accepted=True
+        ).exists():
+            return Response({"error": "No permission"}, status=403)
 
         serializer = ImportedQuestionSerializer(
             data=request.data.get("questions", []), many=True

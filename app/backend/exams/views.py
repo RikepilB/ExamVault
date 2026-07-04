@@ -1,5 +1,6 @@
 import io
 import logging
+import os
 import traceback
 import zipfile
 
@@ -37,7 +38,12 @@ from .serializers import (
     ExamTemplateSerializer,
     VariantSerializer,
 )
-from .services import ExamExportService, ExamUpdateService, VariantGenerationService
+from .services import (
+    ExamExportService,
+    ExamUpdateService,
+    VariantGenerationService,
+    sanitize_filename_component,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -679,12 +685,14 @@ class ExamViewSet(viewsets.ModelViewSet):
                         entity_id=exam.id,
                     )
 
+                safe_title = sanitize_filename_component(exam.title)
                 response["Content-Disposition"] = (
-                    f'attachment; filename="{exam.title}_Variant_{label}.docx"'
+                    f'attachment; filename="{safe_title}_Variant_{label}.docx"'
                 )
                 return response
 
             # 3) Otherwise (either multi‐variant OR default/all path) → ZIP
+            safe_title = sanitize_filename_component(exam.title)
             buf = io.BytesIO()
             with zipfile.ZipFile(buf, "w") as zf:
                 for vid in variant_ids:
@@ -693,12 +701,12 @@ class ExamViewSet(viewsets.ModelViewSet):
 
                     # add the .docx
                     doc_bytes = ExamExportService.export_variants_to_docx(exam, [vid])
-                    zf.writestr(f"{exam.title}_Variant_{label}.docx", doc_bytes)
+                    zf.writestr(f"{safe_title}_Variant_{label}.docx", doc_bytes)
 
                     # add the answer‐key CSV
                     csv_str = ExamExportService.generate_answer_key_csv(exam, [vid])
                     zf.writestr(
-                        f"{exam.title}_Variant_{label}_AnswerKey.csv",
+                        f"{safe_title}_Variant_{label}_AnswerKey.csv",
                         csv_str.encode("utf-8"),
                     )
 
@@ -711,7 +719,7 @@ class ExamViewSet(viewsets.ModelViewSet):
             )
             response = HttpResponse(buf.read(), content_type="application/zip")
             response["Content-Disposition"] = (
-                f'attachment; filename="{exam.title}_Variants.zip"'
+                f'attachment; filename="{safe_title}_Variants.zip"'
             )
             return response
 
@@ -744,6 +752,7 @@ class ExamViewSet(viewsets.ModelViewSet):
                     variant_ids = list(exam.variants.values_list("id", flat=True))
 
                 # Create ZIP file with individual answer key files
+                safe_title = sanitize_filename_component(exam.title)
                 buffer = BytesIO()
                 with zipfile.ZipFile(buffer, "w") as zip_file:
                     for variant_id in variant_ids:
@@ -754,7 +763,7 @@ class ExamViewSet(viewsets.ModelViewSet):
                                 csv_content = ExamExportService.generate_answer_key_csv(
                                     exam, [variant_id]
                                 )
-                                filename = f"{exam.title}_Variant_{variant.version_label}_answer_key.csv"
+                                filename = f"{safe_title}_Variant_{variant.version_label}_answer_key.csv"
                                 zip_file.writestr(filename, csv_content)
                         except Exception as e:
                             logger.error(
@@ -789,7 +798,7 @@ class ExamViewSet(viewsets.ModelViewSet):
                     buffer.getvalue(), content_type="application/zip"
                 )
                 response["Content-Disposition"] = (
-                    f'attachment; filename="{exam.title}_answer_keys.zip"'
+                    f'attachment; filename="{safe_title}_answer_keys.zip"'
                 )
                 return response
 
@@ -817,8 +826,9 @@ class ExamViewSet(viewsets.ModelViewSet):
                 )
 
                 response = HttpResponse(file_bytes, content_type=content_type)
+                safe_title = sanitize_filename_component(exam.title)
                 response["Content-Disposition"] = (
-                    f'attachment; filename="{exam.title}_answer_key.{export_format}"'
+                    f'attachment; filename="{safe_title}_answer_key.{export_format}"'
                 )
                 return response
 
@@ -1008,26 +1018,27 @@ class ExamViewSet(viewsets.ModelViewSet):
         logger.info(f"Variant IDs: {variant_ids}")
 
         try:
+            safe_title = sanitize_filename_component(exam.title)
             if export_format == "docx":
                 logger.info("Starting DOCX export...")
                 zip_bytes = ExamExportService.export_variants_to_zip(
                     exam, variant_ids, "docx"
                 )
-                filename = f"{exam.title}_variants_docx.zip"
+                filename = f"{safe_title}_variants_docx.zip"
                 content_type = "application/zip"
             elif export_format == "pdf":
                 logger.info("Starting PDF export...")
                 zip_bytes = ExamExportService.export_variants_to_zip(
                     exam, variant_ids, "pdf"
                 )
-                filename = f"{exam.title}_variants_pdf.zip"
+                filename = f"{safe_title}_variants_pdf.zip"
                 content_type = "application/zip"
             elif export_format == "answer_key":
                 logger.info("Starting answer key export...")
                 zip_bytes = ExamExportService.export_answer_keys_to_zip(
                     exam, variant_ids
                 )
-                filename = f"{exam.title}_answer_keys.zip"
+                filename = f"{safe_title}_answer_keys.zip"
                 content_type = "application/zip"
             else:
                 return Response({"error": "Invalid export format"}, status=400)
@@ -1068,23 +1079,31 @@ class ExamViewSet(viewsets.ModelViewSet):
         export_format = request.data.get("format", "docx")
 
         try:
+            safe_title = sanitize_filename_component(exam.title)
             if export_format == "docx":
                 files = ExamExportService.export_variants_to_docx_files(
                     exam, [variant_id]
                 )
-                filename, filebytes = files[0]
+                raw_filename, filebytes = files[0]
+                # raw_filename is built from exam.title by the DOCX exporter;
+                # sanitize the base name, keeping the extension, to prevent
+                # zip-slip / header-injection via a hostile exam title.
+                name, ext = os.path.splitext(raw_filename)
+                filename = f"{sanitize_filename_component(name)}{ext}"
                 content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             elif export_format == "pdf":
                 files = ExamExportService.export_variants_to_pdf_files(
                     exam, [variant_id]
                 )
-                filename, filebytes = files[0]
+                raw_filename, filebytes = files[0]
+                name, ext = os.path.splitext(raw_filename)
+                filename = f"{sanitize_filename_component(name)}{ext}"
                 content_type = "application/pdf"
             elif export_format == "csv":
                 # Export full exam as CSV
                 csv_content = ExamExportService.generate_exam_csv(exam, [variant_id])
                 variant = exam.variants.get(id=variant_id)
-                filename = f"{exam.title}_Variant_{variant.version_label}.csv"
+                filename = f"{safe_title}_Variant_{variant.version_label}.csv"
                 filebytes = csv_content.encode("utf-8")
                 content_type = "text/csv"
             elif export_format == "answer_key":
@@ -1092,7 +1111,7 @@ class ExamViewSet(viewsets.ModelViewSet):
                 csv_content = ExamExportService.generate_answer_key_csv(
                     exam, [variant_id]
                 )
-                filename = f"{exam.title}_Variant_{variant_id}_AnswerKey.csv"
+                filename = f"{safe_title}_Variant_{variant_id}_AnswerKey.csv"
                 filebytes = csv_content.encode("utf-8")
                 content_type = "text/csv"
             else:
@@ -1125,6 +1144,7 @@ class ExamViewSet(viewsets.ModelViewSet):
         export_format = request.data.get("format", "csv")
 
         try:
+            safe_title = sanitize_filename_component(exam.title)
             buffer = io.BytesIO()
 
             with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -1135,19 +1155,19 @@ class ExamViewSet(viewsets.ModelViewSet):
                         content = ExamExportService.generate_answer_key_csv(
                             exam, [variant_id]
                         )
-                        filename = f"{exam.title}_Variant_{variant.version_label}_AnswerKey.csv"
+                        filename = f"{safe_title}_Variant_{variant.version_label}_AnswerKey.csv"
                         zf.writestr(filename, content.encode("utf-8"))
                     elif export_format == "pdf":
                         content = ExamExportService.generate_answer_key_pdf(
                             exam, [variant_id]
                         )
-                        filename = f"{exam.title}_Variant_{variant.version_label}_AnswerKey.pdf"
+                        filename = f"{safe_title}_Variant_{variant.version_label}_AnswerKey.pdf"
                         zf.writestr(filename, content)
                     elif export_format == "docx":
                         content = ExamExportService.generate_answer_key_docx(
                             exam, [variant_id]
                         )
-                        filename = f"{exam.title}_Variant_{variant.version_label}_AnswerKey.docx"
+                        filename = f"{safe_title}_Variant_{variant.version_label}_AnswerKey.docx"
                         zf.writestr(filename, content)
 
             buffer.seek(0)
@@ -1173,7 +1193,7 @@ class ExamViewSet(viewsets.ModelViewSet):
 
             response = HttpResponse(buffer.getvalue(), content_type="application/zip")
             response["Content-Disposition"] = (
-                f'attachment; filename="{exam.title}_all_answer_keys_{export_format}.zip"'
+                f'attachment; filename="{safe_title}_all_answer_keys_{export_format}.zip"'
             )
             return response
 
@@ -1190,6 +1210,7 @@ class ExamViewSet(viewsets.ModelViewSet):
         export_format = request.data.get("format", "pdf")
 
         try:
+            safe_title = sanitize_filename_component(exam.title)
             buffer = io.BytesIO()
 
             with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -1200,22 +1221,27 @@ class ExamViewSet(viewsets.ModelViewSet):
                         content = ExamExportService.generate_exam_csv(
                             exam, [variant_id]
                         )
-                        filename = f"{exam.title}_Variant_{variant.version_label}.csv"
+                        filename = f"{safe_title}_Variant_{variant.version_label}.csv"
                         zf.writestr(filename, content.encode("utf-8"))
                 elif export_format == "pdf":
                     # Use existing PDF export
                     files = ExamExportService.export_variants_to_pdf_files(
                         exam, variant_ids
                     )
-                    for filename, content in files:
-                        zf.writestr(filename, content)
+                    for raw_filename, content in files:
+                        # raw_filename is built from exam.title by the PDF
+                        # exporter; sanitize the base name (keep extension)
+                        # to prevent zip-slip via a hostile exam title.
+                        name, ext = os.path.splitext(raw_filename)
+                        zf.writestr(f"{sanitize_filename_component(name)}{ext}", content)
                 elif export_format == "docx":
                     # Use existing DOCX export
                     files = ExamExportService.export_variants_to_docx_files(
                         exam, variant_ids
                     )
-                    for filename, content in files:
-                        zf.writestr(filename, content)
+                    for raw_filename, content in files:
+                        name, ext = os.path.splitext(raw_filename)
+                        zf.writestr(f"{sanitize_filename_component(name)}{ext}", content)
 
             buffer.seek(0)
 
@@ -1240,7 +1266,7 @@ class ExamViewSet(viewsets.ModelViewSet):
 
             response = HttpResponse(buffer.getvalue(), content_type="application/zip")
             response["Content-Disposition"] = (
-                f'attachment; filename="{exam.title}_all_variants_{export_format}.zip"'
+                f'attachment; filename="{safe_title}_all_variants_{export_format}.zip"'
             )
             return response
 
@@ -1616,7 +1642,20 @@ def template_layout_detail_api(request, template_id):
         logger.info(f"🔍 Returning template data: {serializer.data}")
         return Response(serializer.data)
 
-    elif request.method == "PUT":
+    # Modifying/deleting is stricter than viewing: the "is_default" exception
+    # above only grants read access to the shared default template. Only the
+    # creator (or staff, via the dedicated admin endpoints) may PUT/DELETE it
+    # here — otherwise every authenticated user could edit or destroy the
+    # single shared default template.
+    if template.created_by != request.user and not request.user.is_staff:
+        logger.error(
+            f"🔍 User {request.user.email} cannot modify template {template_id} created by {template.created_by.email}"
+        )
+        return Response(
+            {"error": "Template not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    if request.method == "PUT":
         serializer = ExamTemplateSerializer(template, data=request.data)
         if serializer.is_valid():
             serializer.save()

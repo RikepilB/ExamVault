@@ -5,6 +5,7 @@ Services for exam operations - separates business logic from models and views
 import csv
 import io
 import logging
+import os
 import random
 from typing import Any, Dict, List, Optional, Tuple
 import zipfile
@@ -20,6 +21,17 @@ from .models import Exam, ExamExportHistory, Variant
 from .pdf_exporter import PDFExporter
 
 logger = logging.getLogger(__name__)
+
+
+def sanitize_filename_component(value: str) -> str:
+    """Strip characters that could enable path traversal (zip-slip) or
+    break a Content-Disposition header when used as part of a filename.
+
+    Mirrors the QuestionBank.title sanitizer in courses/views.py.
+    """
+    return "".join(
+        c for c in str(value) if c.isalnum() or c in (" ", "-", "_")
+    ).rstrip()
 
 
 class ExamValidationService:
@@ -1062,7 +1074,11 @@ class ExamExportService:
         buffer = io.BytesIO()
         with zipfile.ZipFile(buffer, "w") as zip_file:
             for filename, content in files:
-                zip_file.writestr(filename, content)
+                # filename is built from exam.title by the PDF/DOCX exporters;
+                # sanitize the base name (keeping the extension) so a title
+                # containing "../" can't zip-slip its way out of the archive.
+                name, ext = os.path.splitext(filename)
+                zip_file.writestr(f"{sanitize_filename_component(name)}{ext}", content)
 
         buffer.seek(0)
         return buffer.getvalue()
@@ -1079,7 +1095,10 @@ class ExamExportService:
         with zipfile.ZipFile(buffer, "w") as zip_file:
             # Add CSV answer key
             csv_content = ExamExportService.generate_answer_key_csv(exam, variant_ids)
-            zip_file.writestr(f"{exam.title}_answer_keys.csv", csv_content)
+            zip_file.writestr(
+                f"{sanitize_filename_component(exam.title)}_answer_keys.csv",
+                csv_content,
+            )
 
         buffer.seek(0)
         return buffer.getvalue()

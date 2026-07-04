@@ -29,6 +29,8 @@ from exams.models import Exam, Variant, VariantQuestion
 from questions.models import Question, QuestionBank
 from results.models import ExamResult
 
+from .services import VariantSetAnalyticsService
+
 
 class VariantSetAnalyticsView(APIView):
     """Get comprehensive analytics for a specific variant set"""
@@ -73,163 +75,27 @@ class VariantSetAnalyticsView(APIView):
             )
 
     def _calculate_variant_set_analytics(self, exam, variants):
-        """Calculate comprehensive analytics for a variant set"""
+        """Calculate comprehensive analytics for a variant set.
 
-        # Get all questions from all variants
-        all_questions = []
-        question_counts = {}
+        Delegates to VariantSetAnalyticsService, which computes real
+        diversity/difficulty/Hamming-distance/integrity metrics from the
+        actual variant and question data (no mock/simulated values).
+        """
+        variants = list(variants)
 
-        for variant in variants:
-            variant_questions = variant.questions.all()
-            all_questions.extend(variant_questions)
+        analytics_data = VariantSetAnalyticsService.calculate_variant_set_analytics(
+            variants
+        )
 
-            # Count questions per variant
-            question_counts[variant.id] = variant_questions.count()
-
-        total_questions = len(all_questions)
-        unique_questions = len(set(q.id for q in all_questions))
-
-        # Calculate question diversity
-        question_diversity = {
-            "total_questions": total_questions,
-            "unique_questions": unique_questions,
-            "diversity_ratio": (
-                unique_questions / total_questions if total_questions > 0 else 0
-            ),
-            "diversity_percentage": (
-                (unique_questions / total_questions * 100) if total_questions > 0 else 0
-            ),
-            "reuse_rate": (
-                ((total_questions - unique_questions) / total_questions * 100)
-                if total_questions > 0
-                else 0
-            ),
+        analytics_data["metadata"] = {
+            "exam_id": exam.id,
+            "exam_title": exam.title,
+            "variant_ids": [v.id for v in variants],
+            "variant_labels": [f"Variant {i+1}" for i in range(len(variants))],
+            "calculated_at": timezone.now().isoformat(),
         }
 
-        # Calculate difficulty distribution
-        difficulty_counts = {}
-        for question in all_questions:
-            difficulty = getattr(question, "difficulty", "medium")
-            difficulty_counts[difficulty] = difficulty_counts.get(difficulty, 0) + 1
-
-        total_difficulty_questions = sum(difficulty_counts.values())
-        difficulty_percentages = {
-            difficulty: (
-                (count / total_difficulty_questions * 100)
-                if total_difficulty_questions > 0
-                else 0
-            )
-            for difficulty, count in difficulty_counts.items()
-        }
-
-        # Calculate balance score (how evenly distributed difficulties are)
-        if len(difficulty_counts) > 1:
-            balance_score = (
-                100
-                - max(difficulty_percentages.values())
-                + min(difficulty_percentages.values())
-            )
-        else:
-            balance_score = 100  # Perfect balance if only one difficulty level
-
-        difficulty_distribution = {
-            "counts": difficulty_counts,
-            "percentages": difficulty_percentages,
-            "balance_score": balance_score,
-            "total_questions": total_difficulty_questions,
-        }
-
-        # Calculate answer pattern analysis (Hamming distance simulation)
-        variant_count = variants.count()
-        if variant_count > 1:
-            # Simulate Hamming distances between variants
-            hamming_distances = [85, 78, 92, 88, 75]  # Mock data
-            hamming_percentage = np.mean(hamming_distances)
-            pattern_diversity = 100 - (
-                hamming_percentage / 100 * 50
-            )  # Higher diversity = lower average distance
-        else:
-            hamming_distances = []
-            hamming_percentage = 0
-            pattern_diversity = 100
-
-        answer_pattern_analysis = {
-            "hamming_distance": hamming_percentage,
-            "hamming_percentage": hamming_percentage,
-            "pattern_diversity": pattern_diversity,
-            "risk_score": max(0, 100 - pattern_diversity),
-            "unique_patterns": variant_count,
-            "total_variants": variant_count,
-        }
-
-        # Calculate integrity score
-        diversity_score = question_diversity["diversity_percentage"]
-        balance_score = difficulty_distribution["balance_score"]
-        pattern_score = answer_pattern_analysis["pattern_diversity"]
-
-        # Calculate penalties
-        variant_count_penalty = variant_count < 3  # Penalty for too few variants
-        reuse_penalty = question_diversity["reuse_rate"] > 30  # Penalty for high reuse
-
-        # Calculate final integrity score
-        base_score = (diversity_score + balance_score + pattern_score) / 3
-
-        # Apply penalties
-        if variant_count_penalty:
-            base_score -= 15
-        if reuse_penalty:
-            base_score -= 10
-
-        integrity_score = max(0, min(100, base_score))
-
-        # Determine grade and color
-        if integrity_score >= 90:
-            grade = "Excellent"
-            color = "green"
-        elif integrity_score >= 75:
-            grade = "Good"
-            color = "blue"
-        elif integrity_score >= 60:
-            grade = "Moderate"
-            color = "yellow"
-        else:
-            grade = "Poor"
-            color = "red"
-
-        integrity_data = {
-            "score": round(integrity_score, 1),
-            "grade": grade,
-            "color": color,
-            "components": {
-                "diversity_score": round(diversity_score, 1),
-                "balance_score": round(balance_score, 1),
-                "pattern_score": round(pattern_score, 1),
-            },
-            "penalties": {
-                "variant_count_penalty": variant_count_penalty,
-                "reuse_penalty": reuse_penalty,
-            },
-        }
-
-        return {
-            "integrity_score": integrity_data,
-            "question_diversity": question_diversity,
-            "difficulty_distribution": difficulty_distribution,
-            "answer_pattern_analysis": answer_pattern_analysis,
-            "question_reuse_rate": question_diversity["reuse_rate"],
-            "mandatory_overlap": 0,  # Placeholder
-            "hamming_distances": hamming_distances,
-            "variant_count": variant_count,
-            "total_questions": total_questions,
-            "unique_questions": unique_questions,
-            "metadata": {
-                "exam_id": exam.id,
-                "exam_title": exam.title,
-                "variant_ids": [v.id for v in variants],
-                "variant_labels": [f"Variant {i+1}" for i in range(variant_count)],
-                "calculated_at": timezone.now().isoformat(),
-            },
-        }
+        return analytics_data
 
 
 class AnalyticsHealthView(APIView):
@@ -1618,211 +1484,6 @@ class StudentReportExportCSVView(StudentReportExportView):
     def get(self, request, course_id=None, student_id=None):
         # Override to force CSV format
         return self._export_report(request, course_id, student_id, format="csv")
-
-
-class DebugExportView(APIView):
-    """Debug view to test URL routing"""
-
-    permission_classes = []  # No authentication required for debug
-
-    def get(self, request, course_id=None, student_id=None):
-        try:
-            # Test the actual export logic without authentication
-            from courses.models import Course, Student
-            from results.models import ExamResult
-
-            from .helpers import (
-                CSVExportGenerator,
-                DOCXReportGenerator,
-                PDFReportGenerator,
-            )
-
-            # Get the first course and student for testing
-            course = Course.objects.first()
-            student = Student.objects.first() if course else None
-
-            if not course or not student:
-                return Response(
-                    {
-                        "error": "No test data available",
-                        "courses": Course.objects.count(),
-                        "students": Student.objects.count(),
-                    }
-                )
-
-            # Get exam results
-            results = ExamResult.objects.filter(
-                student=student, exam__course=course
-            ).select_related("exam", "variant")
-
-            # Test CSV generation
-            try:
-                csv_generator = CSVExportGenerator()
-                csv_response = csv_generator.generate_student_report_csv(
-                    student, course, results
-                )
-                csv_status = "OK"
-            except Exception as e:
-                csv_status = f"Error: {str(e)}"
-
-            # Test PDF generation
-            try:
-                pdf_generator = PDFReportGenerator()
-                pdf_response = pdf_generator.generate_student_report(
-                    student, course, results
-                )
-                pdf_status = "OK"
-            except Exception as e:
-                pdf_status = f"Error: {str(e)}"
-
-            # Test DOCX generation
-            try:
-                docx_generator = DOCXReportGenerator()
-                docx_response = docx_generator.generate_student_report(
-                    student, course, results
-                )
-                docx_status = "OK"
-            except Exception as e:
-                docx_status = f"Error: {str(e)}"
-
-            return Response(
-                {
-                    "status": "Debug test completed",
-                    "csv": csv_status,
-                    "pdf": pdf_status,
-                    "docx": docx_status,
-                    "course": f"{course.code} - {course.name}" if course else "None",
-                    "student": student.name if student else "None",
-                    "results_count": results.count(),
-                }
-            )
-
-        except Exception as e:
-            return Response({"error": f"Debug test failed: {str(e)}"}, status=500)
-
-
-class DebugCSVExportView(APIView):
-    """Debug endpoint for CSV export testing"""
-
-    permission_classes = []
-
-    def get(self, request):
-        try:
-            print("=== DEBUG CSV EXPORT TEST ===")
-            from .helpers import CSVExportGenerator
-
-            CSVExportGenerator()
-
-            # Create a simple test CSV response
-            import csv
-            import io
-
-            output = io.StringIO()
-            writer = csv.writer(output)
-            writer.writerow(["Test", "CSV", "Export"])
-            writer.writerow(["Value1", "Value2", "Value3"])
-
-            response = HttpResponse(output.getvalue(), content_type="text/csv")
-            response["Content-Disposition"] = 'attachment; filename="test.csv"'
-            return response
-        except Exception as e:
-            print(f"Debug CSV error: {str(e)}")
-            import traceback
-
-            traceback.print_exc()
-            return Response({"error": str(e)}, status=500)
-
-
-class DebugPDFExportView(APIView):
-    """Debug endpoint for PDF export testing"""
-
-    permission_classes = []
-
-    def get(self, request):
-        try:
-            print("=== DEBUG PDF EXPORT TEST ===")
-
-            # Test basic ReportLab functionality first
-            import io
-
-            from reportlab.lib.pagesizes import letter
-            from reportlab.lib.styles import getSampleStyleSheet
-            from reportlab.platypus import Paragraph, SimpleDocTemplate
-
-            print("PDF Generator: Creating simple test PDF")
-
-            # Create a simple PDF buffer
-            buffer = io.BytesIO()
-            doc = SimpleDocTemplate(buffer, pagesize=letter)
-            story = []
-
-            styles = getSampleStyleSheet()
-            title = Paragraph("Test PDF Export", styles["Title"])
-            story.append(title)
-
-            content = Paragraph(
-                "This is a test PDF generated successfully!", styles["Normal"]
-            )
-            story.append(content)
-
-            doc.build(story)
-            buffer.seek(0)
-
-            # Return the PDF response
-            response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
-            response["Content-Disposition"] = 'attachment; filename="debug_test.pdf"'
-            print("PDF Generator: Simple PDF created successfully")
-            return response
-
-        except Exception as e:
-            print(f"Debug PDF error: {str(e)}")
-            import traceback
-
-            traceback.print_exc()
-            return Response({"error": str(e)}, status=500)
-
-
-class DebugDOCXExportView(APIView):
-    """Debug endpoint for DOCX export testing"""
-
-    permission_classes = []
-
-    def get(self, request):
-        try:
-            print("=== DEBUG DOCX EXPORT TEST ===")
-
-            # Test basic python-docx functionality first
-            import io
-
-            from docx import Document
-
-            print("DOCX Generator: Creating simple test DOCX")
-
-            # Create a simple DOCX document
-            doc = Document()
-            doc.add_heading("Test DOCX Export", 0)
-            doc.add_paragraph("This is a test DOCX document generated successfully!")
-
-            # Save to buffer
-            buffer = io.BytesIO()
-            doc.save(buffer)
-            buffer.seek(0)
-
-            # Return the DOCX response
-            response = HttpResponse(
-                buffer.getvalue(),
-                content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            )
-            response["Content-Disposition"] = 'attachment; filename="debug_test.docx"'
-            print("DOCX Generator: Simple DOCX created successfully")
-            return response
-
-        except Exception as e:
-            print(f"Debug DOCX error: {str(e)}")
-            import traceback
-
-            traceback.print_exc()
-            return Response({"error": str(e)}, status=500)
 
 
 class CourseBulkExportView(APIView):

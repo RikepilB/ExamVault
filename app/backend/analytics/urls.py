@@ -7,10 +7,6 @@ from .views import (
     CompareCourseView,
     CourseBulkExportView,
     CourseStatisticsView,
-    DebugCSVExportView,
-    DebugDOCXExportView,
-    DebugExportView,
-    DebugPDFExportView,
     GradeDistributionView,
     InstructorOverviewView,
     PerformanceMetricsView,
@@ -94,11 +90,6 @@ urlpatterns = [
         CourseStatisticsView.as_view(),
         name="course-statistics",
     ),
-    # Debug/test endpoints
-    path("debug-simple/", DebugExportView.as_view(), name="debug-simple"),
-    path("debug-csv/", DebugCSVExportView.as_view(), name="debug-csv"),
-    path("debug-pdf/", DebugPDFExportView.as_view(), name="debug-pdf"),
-    path("debug-docx/", DebugDOCXExportView.as_view(), name="debug-docx"),
     path(
         "test-bulk/<int:course_id>/<str:format>/",
         CourseBulkExportView.as_view(),

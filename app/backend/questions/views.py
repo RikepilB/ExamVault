@@ -2,12 +2,14 @@ import re
 
 from django.db import connection
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Question, QuestionBank
+from .permissions import instructor_course_ids, is_course_instructor
 from .serializers import QuestionBankSerializer, QuestionSerializer
 from .utils.file_import import (
     parse_csv_file,
@@ -32,7 +34,10 @@ class QuestionCSVUploadView(APIView):
             )
 
         try:
-            question_bank = QuestionBank.objects.get(id=question_bank_id)
+            question_bank = QuestionBank.objects.get(
+                id=question_bank_id,
+                course_id__in=instructor_course_ids(request.user),
+            )
         except QuestionBank.DoesNotExist:
             return Response(
                 {"error": "Invalid question bank ID or unauthorized."},
@@ -198,17 +203,24 @@ class QuestionBankView(APIView):  # APIView is more suitable for RESTful APIs
 
     # gets the question bank that matches the pk
     def get(self, request, pk):
-        data = QuestionBank.objects.get(pk=pk)
+        data = get_object_or_404(
+            QuestionBank.objects.filter(
+                course_id__in=instructor_course_ids(request.user)
+            ),
+            pk=pk,
+        )
         serializer = self.serializer_class(data)
         return Response(serializer.data)
 
-    # create a course for the user
-    # @api_view(['POST'])
+    # create a question bank for a course the requesting user instructs
     def post(self, request):
-        current_user = self.request.user  # get the currrent logged in user
-        print("current user = ", current_user)
-        # need to add the user pk to the data
         data = request.data  # the current data from the frontend
+        course_id = data.get("course")
+        if not course_id or not is_course_instructor(request.user, course_id):
+            return Response(
+                {"error": "Invalid course ID or unauthorized."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         serializer = self.serializer_class(data=data)
 
@@ -219,13 +231,23 @@ class QuestionBankView(APIView):  # APIView is more suitable for RESTful APIs
             return Response(serializer.errors, status=400)
 
     def delete(self, request, pk):
-        data = QuestionBank.objects.get(pk=pk)
+        data = get_object_or_404(
+            QuestionBank.objects.filter(
+                course_id__in=instructor_course_ids(request.user)
+            ),
+            pk=pk,
+        )
         data.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     # update a question bank
     def put(self, request, pk):
-        data = QuestionBank.objects.get(pk=pk)  # or Question.objects.get
+        data = get_object_or_404(
+            QuestionBank.objects.filter(
+                course_id__in=instructor_course_ids(request.user)
+            ),
+            pk=pk,
+        )  # or Question.objects.get
         serializer = QuestionBankSerializer(data, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -233,7 +255,12 @@ class QuestionBankView(APIView):  # APIView is more suitable for RESTful APIs
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk):
-        data = QuestionBank.objects.get(pk=pk)
+        data = get_object_or_404(
+            QuestionBank.objects.filter(
+                course_id__in=instructor_course_ids(request.user)
+            ),
+            pk=pk,
+        )
         serializer = self.serializer_class(data, data=request.data, partial=True)
 
         if serializer.is_valid():
@@ -250,6 +277,9 @@ class QuestionBankListView(APIView):  # APIView is more suitable for RESTful API
 
     # returns the list of question banks by course and the number of questions
     def get(self, request, course_id):
+        if not is_course_instructor(request.user, course_id):
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
         data = QuestionBank.objects.filter(course=course_id)
         # data = QuestionBank.objects.annotate(question_count=Count('questions'))
         # .filter(course = course_id)
@@ -267,16 +297,26 @@ class QuestionView(APIView):  # APIView is more suitable for RESTful APIs
 
     # get the question by the id
     def get(self, request, pk):
-        data = Question.objects.get(pk=pk)
+        data = get_object_or_404(
+            Question.objects.filter(
+                bank__course_id__in=instructor_course_ids(request.user)
+            ),
+            pk=pk,
+        )
         serializer = self.serializer_class(data)
         return Response(serializer.data)
 
-    # create a new question
+    # create a new question, only into a question bank the user instructs
     def post(self, request):
-        # need to add the current logged in user's pk to the data
         current_user = self.request.user  # get the currrent logged in user
-        # need to add the user pk to the data
         data = request.data  # the current data from the frontend
+        bank_id = data.get("bank")
+        get_object_or_404(
+            QuestionBank.objects.filter(
+                course_id__in=instructor_course_ids(current_user)
+            ),
+            pk=bank_id,
+        )
         data["created_by"] = current_user.pk  # added the user to the data
 
         serializer = QuestionSerializer(data=data)
@@ -288,12 +328,22 @@ class QuestionView(APIView):  # APIView is more suitable for RESTful APIs
             return Response(serializer.errors, status=400)
 
     def delete(self, request, pk):
-        data = Question.objects.get(pk=pk)
+        data = get_object_or_404(
+            Question.objects.filter(
+                bank__course_id__in=instructor_course_ids(request.user)
+            ),
+            pk=pk,
+        )
         data.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def put(self, request, pk):
-        obj = Question.objects.get(pk=pk)  # Fixed: was QuestionBank instead of Question
+        obj = get_object_or_404(
+            Question.objects.filter(
+                bank__course_id__in=instructor_course_ids(request.user)
+            ),
+            pk=pk,
+        )  # Fixed: was QuestionBank instead of Question
         serializer = self.serializer_class(obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -301,7 +351,12 @@ class QuestionView(APIView):  # APIView is more suitable for RESTful APIs
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk):
-        data = Question.objects.get(pk=pk)
+        data = get_object_or_404(
+            Question.objects.filter(
+                bank__course_id__in=instructor_course_ids(request.user)
+            ),
+            pk=pk,
+        )
         serializer = self.serializer_class(data, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -317,6 +372,15 @@ class QuestionListView(APIView):  # APIView is more suitable for RESTful APIs
 
     # returns the list of questions by question bank
     def get(self, request, questionbank_id):
+        # Ensure the requesting user is an instructor on the course that
+        # owns this question bank before returning any of its questions.
+        get_object_or_404(
+            QuestionBank.objects.filter(
+                course_id__in=instructor_course_ids(request.user)
+            ),
+            pk=questionbank_id,
+        )
+
         data = Question.objects.filter(bank=questionbank_id)
         serializer = self.serializer_class(
             data, context={"request": request}, many=True

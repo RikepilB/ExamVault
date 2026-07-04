@@ -24,8 +24,6 @@ class Course(models.Model):
     name = models.CharField(max_length=120)  # e.g. “Intro to Algorithms”
     description = models.TextField(blank=True)
     term = models.CharField(max_length=30)  # e.g. “Fall 2025”
-    banner = models.ImageField(upload_to="course_banners", blank=True)
-
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 

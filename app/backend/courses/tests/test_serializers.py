@@ -79,7 +79,6 @@ class CourseDetailSerializerTests(TestCase):
             "code",
             "name",
             "term",
-            "banner",
             "instructors",
             "instructor_count",
             "last_edited",

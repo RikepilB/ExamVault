@@ -145,7 +145,6 @@ class CourseSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "term",
-            "banner",
             "instructors",  # legacy m2m (ignored by UI)
             "instructor",
             "instructor_count",
@@ -244,7 +243,6 @@ class CourseListSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "term",
-            "banner",
             "instructors",
             "instructor_count",
             "exam_count",

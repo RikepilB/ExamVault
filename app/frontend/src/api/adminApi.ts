@@ -244,22 +244,6 @@ const handleApiError = (error: unknown): never => {
   );
 };
 
-// Mock data for development
-const mockUsers: User[] = [
-  {
-    id: 1,
-    email: 'john.instructor@university.edu',
-    name: 'John Smith',
-    role: 'instructor',
-    is_active: true,
-    is_staff: false,
-    is_superuser: false,
-    created_at: '2024-01-15T10:30:00Z',
-    last_login: '2024-01-20T14:30:00Z',
-    last_logout: null,
-  },
-];
-
 // ── Authentication ─────────────────────
 export async function login(
   credentials: LoginCredentials
@@ -392,13 +376,7 @@ export const users = {
       }
     } catch (error) {
       console.error('Error fetching users:', error);
-      // Return mock data for development when API fails
-      return {
-        count: mockUsers.length,
-        next: null,
-        previous: null,
-        results: mockUsers,
-      };
+      return handleApiError(error);
     }
   },
 
@@ -582,12 +560,8 @@ export const exams = {
     try {
       const response = await adminApiClient.get<ApiResponse>('exams/');
       return response.data;
-    } catch {
-      // Return mock data for development
-      return {
-        success: true,
-        data: { results: [], count: 0 },
-      };
+    } catch (error: unknown) {
+      return handleApiError(error);
     }
   },
 

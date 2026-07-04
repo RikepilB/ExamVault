@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosInstance';
+import { changePassword } from '../api/auth';
 import { StandardButton } from '../components/ui/StandardButton';
 
 import { Mail, CircleUserRound, UserRound, KeyRound } from 'lucide-react';
@@ -44,7 +45,7 @@ export const Profile = () => {
   }, []);
 
   // Handles password update form submission
-  const handlePasswordChange = (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -63,11 +64,15 @@ export const Profile = () => {
       return;
     }
 
-    // Placeholder for actual password change request
-    setSuccess('Password updated successfully.');
-    setOldPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+    const result = await changePassword(oldPassword, newPassword);
+    if (result.success) {
+      setSuccess(result.data.message || 'Password updated successfully.');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } else {
+      setError(result.error);
+    }
   };
 
   // Render loading message while data is being fetched

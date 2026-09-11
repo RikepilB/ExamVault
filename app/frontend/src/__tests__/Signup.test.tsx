@@ -32,7 +32,7 @@ describe('Signup page', () => {
     );
 
     /* ――― submit ――― */
-    await userEvent.click(screen.getByRole('button', { name: /sign up/i }));
+    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
 
     /* ――― error message appears ――― */
     expect(

@@ -90,7 +90,9 @@ describe('EditCourseModal', () => {
     expect(screen.getByLabelText(/Term/i)).toHaveValue('W1');
     // The modal defaults Year to the current calendar year (no hardcoded value,
     // so this test doesn't become a time bomb on January 1st).
-    expect(screen.getByLabelText(/Year/i)).toHaveValue(String(new Date().getFullYear()));
+    expect(screen.getByLabelText(/Year/i)).toHaveValue(
+      String(new Date().getFullYear())
+    );
   });
 
   it('lets the user edit inputs', async () => {

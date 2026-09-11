@@ -203,8 +203,12 @@ SIMPLE_JWT = {
 # Django defaults (2.5MB) are already conservative, but the app has no
 # explicit ceiling documented anywhere; set one deliberately rather than
 # relying on the framework default silently.
-DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("DATA_UPLOAD_MAX_MEMORY_SIZE", 10 * 1024 * 1024))  # 10 MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("FILE_UPLOAD_MAX_MEMORY_SIZE", 10 * 1024 * 1024))  # 10 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(
+    os.getenv("DATA_UPLOAD_MAX_MEMORY_SIZE", 10 * 1024 * 1024)
+)  # 10 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = int(
+    os.getenv("FILE_UPLOAD_MAX_MEMORY_SIZE", 10 * 1024 * 1024)
+)  # 10 MB
 DATA_UPLOAD_MAX_NUMBER_FIELDS = int(os.getenv("DATA_UPLOAD_MAX_NUMBER_FIELDS", 5000))
 
 # Internationalization

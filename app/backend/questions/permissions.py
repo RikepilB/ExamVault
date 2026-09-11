@@ -15,9 +15,9 @@ from courses.models import CourseInstructor
 
 def instructor_course_ids(user):
     """Course IDs where `user` is an accepted instructor."""
-    return CourseInstructor.objects.filter(
-        user=user, accepted=True
-    ).values_list("course_id", flat=True)
+    return CourseInstructor.objects.filter(user=user, accepted=True).values_list(
+        "course_id", flat=True
+    )
 
 
 def is_course_instructor(user, course_id):

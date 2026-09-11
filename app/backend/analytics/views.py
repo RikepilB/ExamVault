@@ -28,7 +28,7 @@ def np_skew(x):
     m3 = np.mean((x - np.mean(x)) ** 3)
     if m2 == 0:
         return 0.0
-    g1 = m3 / (m2 ** 1.5)
+    g1 = m3 / (m2**1.5)
     return float(g1 * np.sqrt(n * (n - 1)) / (n - 2))
 
 

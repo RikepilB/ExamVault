@@ -1233,7 +1233,9 @@ class ExamViewSet(viewsets.ModelViewSet):
                         # exporter; sanitize the base name (keep extension)
                         # to prevent zip-slip via a hostile exam title.
                         name, ext = os.path.splitext(raw_filename)
-                        zf.writestr(f"{sanitize_filename_component(name)}{ext}", content)
+                        zf.writestr(
+                            f"{sanitize_filename_component(name)}{ext}", content
+                        )
                 elif export_format == "docx":
                     # Use existing DOCX export
                     files = ExamExportService.export_variants_to_docx_files(
@@ -1241,7 +1243,9 @@ class ExamViewSet(viewsets.ModelViewSet):
                     )
                     for raw_filename, content in files:
                         name, ext = os.path.splitext(raw_filename)
-                        zf.writestr(f"{sanitize_filename_component(name)}{ext}", content)
+                        zf.writestr(
+                            f"{sanitize_filename_component(name)}{ext}", content
+                        )
 
             buffer.seek(0)
 

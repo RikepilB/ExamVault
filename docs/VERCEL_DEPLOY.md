@@ -53,6 +53,13 @@ deploys — Vercel-side quirk), one command fixes it:
 bash scripts/fix-prod-domain.sh
 ```
 
+**Root cause (solved 2026-09-11):** a dead duplicate project `exam-vault`,
+git-connected to this repo, auto-deployed on every push and periodically
+reclaimed `exam-vault-five.vercel.app` (assigned to it), serving empty builds
+→ 404. That project was deleted; `exam-vault-five` is now the only project
+serving the domain. If 404s ever return, check `vercel ls exam-vault` for
+zombie auto-deploys first.
+
 ## Environment variables (Vercel project settings)
 
 | Variable | Value |

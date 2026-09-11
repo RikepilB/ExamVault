@@ -1,17 +1,23 @@
 from datetime import timedelta
 
 # analytics/views.py
+import numpy as np
 from django.db.models import Avg
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-import numpy as np
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from analytics.models import SimilarityFlag
+from courses.models import Course, CourseInstructor, Student
+from exams.models import Exam, Variant, VariantQuestion
+from questions.models import Question, QuestionBank
+from results.models import ExamResult
+
+from .services import VariantSetAnalyticsService
 
 
 def np_skew(x):
@@ -24,12 +30,6 @@ def np_skew(x):
         return 0.0
     g1 = m3 / (m2 ** 1.5)
     return float(g1 * np.sqrt(n * (n - 1)) / (n - 2))
-from courses.models import Course, CourseInstructor, Student
-from exams.models import Exam, Variant, VariantQuestion
-from questions.models import Question, QuestionBank
-from results.models import ExamResult
-
-from .services import VariantSetAnalyticsService
 
 
 class VariantSetAnalyticsView(APIView):

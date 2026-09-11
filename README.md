@@ -2,6 +2,14 @@
 
 Intelligent exam management platform for educators. Create, manage, and analyze exams with automated variant generation and OMR-ready exports.
 
+**🔴 Live demo: [https://exam-vault-five.vercel.app](https://exam-vault-five.vercel.app)** — full stack (React SPA + Django API) on one Vercel project, Neon Postgres behind it. Sign up as an instructor and create a course to try it.
+
+## Codebase Map
+
+[![Codebase scan](docs/foglamp-scan.png)](https://foglamp.dev/scan/examvault-if3mpl)
+
+AI-generated map of the architecture (models, tools, integrations, flows) — **[view interactive on Foglamp →](https://foglamp.dev/scan/examvault-if3mpl)**
+
 
 ## 🚀 Quick Start
 
@@ -161,7 +169,16 @@ make coverage-all
 - **Integration**: End-to-end testing scenarios
 
 ## 🚀 Deployment
-### Recommended Portfolio Deployment
+
+### Current production deployment (Vercel, full stack)
+
+The live app ships the React build and the Django API from a **single Vercel
+project** (same-origin, no CORS involved) with **Neon Postgres** behind it.
+Full runbook: **[docs/VERCEL_DEPLOY.md](docs/VERCEL_DEPLOY.md)** — bundle
+layout, environment variables, and deploy steps (`scripts/build-vercel-bundle.sh`
++ `vercel deploy --prod`).
+
+### Alternative: split hosting (static + Python host)
 
 This project is full-stack, so static hosting alone is not enough for the complete app.
 

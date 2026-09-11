@@ -42,16 +42,26 @@ export const Login = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#E4F6F8] dark:bg-[#0D1B1E] flex items-center justify-center p-4">
-      <div
-        className="w-full max-w-md bg-blue-100 dark:bg-[#15202B] text-black dark:text-white rounded-lg shadow-xl ring-4 ring-blue-300 dark:ring-cyan-400 dark:shadow-cyan-500/20 p-8 animate-glow-slow"
-        style={{ '--glow-color': '#60a5fa' } as React.CSSProperties}
-      >
-        <h1 className="text-3xl font-bold mb-6 text-center">Login</h1>
+    <div className="fixed inset-0 paper grain relative flex items-center justify-center p-4 text-[var(--ink)]">
+      <div className="w-full max-w-md sheet rounded-lg p-8 relative">
+        {/* red margin rule, like the paper theme */}
+        <span
+          className="absolute left-5 top-6 bottom-6 w-px bg-[rgba(193,18,31,0.25)]"
+          aria-hidden="true"
+        />
+        <p className="font-mono-plex text-[10px] uppercase tracking-[0.25em] text-[var(--ink-faint)] mb-2">
+          Instructor sign-in
+        </p>
+        <h1 className="font-display text-3xl font-semibold mb-6">
+          Welcome back<span className="text-[var(--marker)]">.</span>
+        </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="email"
+              className="block font-mono-plex text-xs uppercase tracking-wider text-[var(--ink-soft)] mb-1"
+            >
               Email
             </label>
             <input
@@ -59,7 +69,7 @@ export const Login = () => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded bg-white dark:bg-gray-900 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[rgba(27,36,49,0.35)] rounded bg-white/70 text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)]"
               required
             />
           </div>
@@ -67,7 +77,7 @@ export const Login = () => {
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium mb-1"
+              className="block font-mono-plex text-xs uppercase tracking-wider text-[var(--ink-soft)] mb-1"
             >
               Password
             </label>
@@ -76,37 +86,41 @@ export const Login = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded bg-white dark:bg-gray-900 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[rgba(27,36,49,0.35)] rounded bg-white/70 text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)]"
               required
             />
-            <div className="mt-1 text-s text-red-600 text-right">
+            <div className="mt-1 text-xs text-[var(--ink-soft)] text-right">
               <span
                 onClick={() => navigate('/forgot-password')}
-                className="cursor-pointer hover:underline"
+                className="cursor-pointer link-underline"
               >
                 Forgot your password?
               </span>
             </div>
           </div>
 
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+          {error && (
+            <p className="text-[var(--marker)] text-sm border-l-2 border-[var(--marker)] pl-3">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50"
+            className="btn-marker w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Logging in…' : 'Sign in'}
           </button>
         </form>
 
-        <div className="mt-4 text-sm text-center text-gray-600 dark:text-gray-300">
-          Don’t have an account?{' '}
+        <div className="mt-4 text-sm text-center text-[var(--ink-soft)]">
+          Don't have an account?{' '}
           <button
             onClick={() => navigate('/signup')}
-            className="text-blue-600 hover:underline ml-1"
+            className="link-underline font-semibold ml-1"
           >
-            Sign Up
+            Sign up
           </button>
         </div>
       </div>

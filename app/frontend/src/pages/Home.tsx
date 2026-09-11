@@ -1,104 +1,361 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const GitHubIcon = () => (
+  <svg
+    className="w-4 h-4"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"
+    />
+  </svg>
+);
+
+/**
+ * The OMR answer sheet — ExamVault's native artifact — as the hero visual.
+ * One bubble "fills" in a loop, like a scanner reading the sheet.
+ */
+const AnswerSheetArtifact = () => {
+  const rows = [
+    { n: 1, marked: 2 },
+    { n: 2, marked: 0 },
+    { n: 3, marked: 3 },
+    { n: 4, marked: 1 },
+    { n: 5, marked: 3 },
+  ];
+  return (
+    <div className="relative reveal-artifact">
+      {/* the sheet */}
+      <div className="sheet relative rounded-md p-6 sm:p-8 w-full max-w-md mx-auto rotate-2">
+        <div className="flex items-baseline justify-between mb-6">
+          <p className="font-mono-plex text-[10px] tracking-[0.2em] uppercase text-[var(--ink-faint)]">
+            Answer sheet · Form B
+          </p>
+          <p className="font-mono-plex text-[10px] text-[var(--ink-faint)]">
+            COSC 304
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {rows.map((row) => (
+            <div key={row.n} className="flex items-center gap-4 omr-row">
+              <span className="font-mono-plex text-xs w-5 text-[var(--ink-soft)]">
+                {row.n}.
+              </span>
+              <div className="flex items-center gap-3">
+                {['A', 'B', 'C', 'D'].map((letter, i) => {
+                  const isMarked = row.marked === i;
+                  const isCorrect = row.n === 2 && i === 0;
+                  return (
+                    <span key={letter} className="flex items-center gap-1.5">
+                      <span
+                        className={
+                          isMarked
+                            ? 'omr-bubble omr-scan-bubble is-marked text-[var(--marker)]'
+                            : isCorrect
+                              ? 'omr-bubble is-correct'
+                              : 'omr-bubble text-[var(--ink)]'
+                        }
+                        style={
+                          isMarked
+                            ? ({
+                                fill: 'var(--marker)',
+                              } as React.CSSProperties)
+                            : undefined
+                        }
+                        aria-hidden="true"
+                      />
+                      <span className="font-mono-plex text-[10px] text-[var(--ink-faint)]">
+                        {letter}
+                      </span>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* registration marks */}
+        <div className="mt-6 pt-4 border-t border-dashed border-[rgba(27,36,49,0.25)] flex items-center justify-between">
+          <p className="font-mono-plex text-[10px] text-[var(--ink-faint)]">
+            ▪▪ VARIANT 12 OF 24
+          </p>
+          <div className="flex gap-1.5">
+            <span className="w-2 h-2 bg-[var(--ink)]" />
+            <span className="w-2 h-2 border border-[var(--ink)]" />
+            <span className="w-2 h-2 bg-[var(--ink)]" />
+          </div>
+        </div>
+      </div>
+
+      {/* grading stamp */}
+      <div className="absolute -right-3 -bottom-5 sm:-right-8 bg-[var(--correct)] text-white font-mono-plex text-xs tracking-widest uppercase px-4 py-2 rotate-[-4deg] border-[1.5px] border-[var(--ink)] shadow-[3px_3px_0_var(--ink)]">
+        24/24 variants
+      </div>
+    </div>
+  );
+};
+
+const steps = [
+  {
+    n: '01',
+    title: 'Bank your questions',
+    desc: 'Write once, reuse forever. Tag by topic and difficulty in per-course question banks.',
+  },
+  {
+    n: '02',
+    title: 'Generate variants',
+    desc: 'One click produces many unique papers — question order and answer keys shuffled per student.',
+  },
+  {
+    n: '03',
+    title: 'Print OMR-ready',
+    desc: 'Export PDF or DOCX with answer sheets the scanner can read. No manual formatting.',
+  },
+  {
+    n: '04',
+    title: 'Scan & analyze',
+    desc: 'Upload results and get score distributions, question difficulty, and similarity flags.',
+  },
+];
+
+const features = [
+  {
+    q: 'Q1',
+    title: 'Variant engine',
+    desc: 'Every student can sit a different exam from the same blueprint — built-in fairness, less cheating surface.',
+    options: ['shuffles order', 'unique keys', 'per-course banks'],
+    marked: 1,
+  },
+  {
+    q: 'Q2',
+    title: 'OMR-native exports',
+    desc: 'Papers and answer sheets come out print-ready, registration marks included — the scanner workflow is first-class, not an afterthought.',
+    options: ['pdf', 'docx', 'csv results'],
+    marked: 0,
+  },
+  {
+    q: 'Q3',
+    title: 'Results analytics',
+    desc: 'Score distributions, per-question performance, and answer-similarity flags land the moment results are in.',
+    options: ['difficulty', 'skew', 'similarity'],
+    marked: 2,
+  },
+];
+
 export const Home = () => {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div
-      className="min-h-screen bg-gray-50 text-gray-800 dark:bg-[#0D1B1E] dark:text-white"
-      style={{ minWidth: '100vw' }}
-    >
-      {/* Main content */}
-      <main className="w-full px-6 py-24 max-w-screen-xl mx-auto">
-        {/* Hero section */}
-        <div className="text-center mb-20">
-          <div className="inline-block bg-blue-100 text-blue-600 p-4 rounded-full mb-6">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 12h6m2 0a2 2 0 012 2v4a2 2 0 01-2 2H7a2 2 0 01-2-2v-4a2 2 0 012-2m4-4h.01M5 12V6a2 2 0 012-2h10a2 2 0 012 2v6"
-              />
-            </svg>
-          </div>
-          <h1 className="text-5xl font-bold mb-4">
-            Welcome to <span className="text-blue-600">ExamVault</span>
-          </h1>
-          <p className="text-lg max-w-2xl mx-auto mb-6">
-            Streamline your exam management process with our intuitive platform.
-            Create, manage, and analyze exams with ease and precision.
-          </p>
-          {isAuthenticated && (
-            <Link
-              to="/dashboard"
-              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-            >
-              Go to Dashboard
-            </Link>
-          )}
-
+    <div className="min-h-screen paper grain relative overflow-hidden text-[var(--ink)]">
+      {/* ======================= Masthead ======================= */}
+      <header className="relative max-w-6xl mx-auto px-6 pt-8 flex items-center justify-between">
+        <a
+          href="#"
+          className="font-display text-2xl font-semibold tracking-tight"
+        >
+          ExamVault<span className="text-[var(--marker)]">.</span>
+        </a>
+        <nav className="flex items-center gap-3 sm:gap-6">
+          <a
+            href="https://github.com/RikepilB/ExamVault"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:inline-flex link-underline font-medium text-sm items-center gap-1.5"
+          >
+            <GitHubIcon /> Source
+          </a>
           {!isAuthenticated && (
-            <Link
-              to="/signup"
-              className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700"
-            >
-              Create an account to get started
+            <Link to="/login" className="font-medium text-sm link-underline">
+              Sign in
             </Link>
           )}
+          <Link
+            to={isAuthenticated ? '/dashboard' : '/signup'}
+            className="btn-marker !py-2 !px-4 text-sm"
+          >
+            {isAuthenticated ? 'Open app' : 'Get started'}
+          </Link>
+        </nav>
+      </header>
+
+      {/* ======================= Hero ======================= */}
+      <section className="relative max-w-6xl mx-auto px-6 pt-16 pb-24 sm:pt-24 grid lg:grid-cols-[1.1fr_0.9fr] gap-16 items-center">
+        <div>
+          <p className="reveal reveal-1 font-mono-plex text-xs tracking-[0.25em] uppercase text-[var(--ink-soft)] mb-6">
+            <span className="inline-block w-2 h-2 rounded-full bg-[var(--marker)] mr-2 align-middle" />
+            Exam management for educators
+          </p>
+          <h1 className="reveal reveal-2 font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.02] font-semibold tracking-tight mb-6">
+            Every exam,
+            <br />
+            <span className="italic font-medium">engineered</span>
+            <span className="text-[var(--marker)]">.</span>
+          </h1>
+          <p className="reveal reveal-3 text-lg sm:text-xl text-[var(--ink-soft)] max-w-xl mb-10 leading-relaxed">
+            ExamVault turns a question bank into unique, print-ready exam
+            variants — then scans the results back into analytics. Write
+            questions once; let the machine handle the paperwork.
+          </p>
+          <div className="reveal reveal-4 flex flex-wrap items-center gap-4">
+            {isAuthenticated ? (
+              <Link to="/dashboard" className="btn-marker text-base">
+                Go to your dashboard →
+              </Link>
+            ) : (
+              <Link to="/signup" className="btn-marker text-base">
+                Create your first exam →
+              </Link>
+            )}
+            <a
+              href="https://github.com/RikepilB/ExamVault"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ink text-base"
+            >
+              <GitHubIcon /> View on GitHub
+            </a>
+          </div>
+          <p className="reveal reveal-5 mt-8 font-mono-plex text-xs text-[var(--ink-faint)]">
+            // instructor accounts are free during the beta — sign up in under a
+            minute
+          </p>
         </div>
 
-        {/* Feature cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              title: 'Easy Creation',
-              desc: 'Quickly design and deploy exams with a user-friendly interface.',
-              icon: '📝',
-            },
-            {
-              title: 'Secure Storage',
-              desc: 'Your exams are safe with robust security and backup measures.',
-              icon: '🔒',
-            },
-            {
-              title: 'Insightful Analytics',
-              desc: 'Gain valuable insights from detailed performance reports.',
-              icon: '📊',
-            },
-          ].map(({ title, desc, icon }) => (
-            <div
-              key={title}
-              className="bg-white dark:bg-[#15202B] p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+        <AnswerSheetArtifact />
+      </section>
+
+      {/* ======================= Scanner rail ======================= */}
+      <section className="relative border-y border-[rgba(27,36,49,0.25)] bg-[var(--paper-deep)]">
+        <div className="max-w-6xl mx-auto px-6 py-16">
+          <div className="flex items-baseline justify-between mb-10 flex-wrap gap-2">
+            <h2 className="font-display text-3xl font-semibold tracking-tight">
+              From bank to bell curve in four moves
+            </h2>
+            <p className="font-mono-plex text-xs uppercase tracking-[0.2em] text-[var(--ink-faint)]">
+              the full workflow
+            </p>
+          </div>
+          <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-[rgba(27,36,49,0.2)] border border-[rgba(27,36,49,0.2)]">
+            {steps.map((s) => (
+              <li
+                key={s.n}
+                className="bg-[var(--paper-deep)] p-6 group hover:bg-[#fdfaf2] transition-colors"
+              >
+                <p className="font-mono-plex text-sm text-[var(--marker)] font-semibold mb-3">
+                  {s.n}
+                </p>
+                <h3 className="font-display text-xl font-semibold mb-2">
+                  {s.title}
+                </h3>
+                <p className="text-sm text-[var(--ink-soft)] leading-relaxed">
+                  {s.desc}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ======================= Features as exam questions ======================= */}
+      <section className="relative max-w-6xl mx-auto px-6 py-24">
+        <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
+          Why instructors keep the key
+        </h2>
+        <p className="text-[var(--ink-soft)] mb-12 max-w-2xl">
+          Three capabilities you would otherwise assemble from four different
+          tools — here they are one graded workflow.
+        </p>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {features.map((f) => (
+            <article
+              key={f.q}
+              className="sheet rounded-lg p-7 flex flex-col gap-4 transition-transform duration-200 hover:-translate-y-1.5"
             >
-              <div className="text-blue-600 text-2xl mb-2">{icon}</div>
-              <h3 className="font-semibold text-lg">{title}</h3>
-              <p className="text-sm mt-2 text-gray-600 dark:text-gray-300">
-                {desc}
+              <div className="flex items-center justify-between">
+                <span className="font-mono-plex text-sm font-semibold text-[var(--marker)]">
+                  {f.q}.
+                </span>
+                <div className="flex gap-2">
+                  {f.options.map((o, i) => (
+                    <span
+                      key={o}
+                      className="flex items-center gap-1 font-mono-plex text-[10px] text-[var(--ink-faint)]"
+                    >
+                      <span
+                        className={
+                          i === f.marked
+                            ? 'omr-bubble is-marked text-[var(--marker)]'
+                            : 'omr-bubble text-[var(--ink-faint)]'
+                        }
+                      />
+                      {o}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <h3 className="font-display text-2xl font-semibold">{f.title}</h3>
+              <p className="text-sm text-[var(--ink-soft)] leading-relaxed">
+                {f.desc}
               </p>
-            </div>
+            </article>
           ))}
         </div>
-      </main>
+      </section>
 
-      {/* Footer */}
-      <footer className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-        © {new Date().getFullYear()} ExamVault. All rights reserved.
-        <br />
-        <a
-          href="https://github.com/RikepilB/ExamVault"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-500 hover:underline"
-        >
-          View on GitHub
-        </a>
+      {/* ======================= Closing CTA ======================= */}
+      <section className="relative border-t border-[rgba(27,36,49,0.25)]">
+        <div className="max-w-6xl mx-auto px-6 py-24 text-center">
+          <p className="font-mono-plex text-xs uppercase tracking-[0.25em] text-[var(--ink-faint)] mb-6">
+            final question
+          </p>
+          <h2 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight mb-4">
+            Ready when you write your next exam
+            <span className="text-[var(--marker)]">?</span>
+          </h2>
+          <p className="text-[var(--ink-soft)] max-w-lg mx-auto mb-10">
+            Create an account, add a course, and generate your first variant set
+            today.
+          </p>
+          <Link
+            to={isAuthenticated ? '/dashboard' : '/signup'}
+            className="btn-marker text-lg !px-8 !py-4"
+          >
+            {isAuthenticated ? 'Open ExamVault →' : 'Start free →'}
+          </Link>
+        </div>
+      </section>
+
+      {/* ======================= Footer ======================= */}
+      <footer className="relative border-t border-[rgba(27,36,49,0.25)]">
+        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="font-display font-semibold">
+            ExamVault<span className="text-[var(--marker)]">.</span>
+          </p>
+          <p className="font-mono-plex text-xs text-[var(--ink-faint)]">
+            © {new Date().getFullYear()} ExamVault · MIT licensed
+          </p>
+          <div className="flex items-center gap-5 text-sm">
+            <a
+              href="https://github.com/RikepilB/ExamVault"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link-underline inline-flex items-center gap-1.5"
+            >
+              <GitHubIcon /> GitHub
+            </a>
+            <Link to="/Help" className="link-underline">
+              Support
+            </Link>
+          </div>
+        </div>
       </footer>
     </div>
   );

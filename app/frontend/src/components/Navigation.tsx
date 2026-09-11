@@ -46,8 +46,8 @@ export const Navigation: React.FC = () => {
   return (
     <nav className="bg-sidebar-bg text-sidebar-text w-64 min-h-screen flex flex-col shadow-lg fixed left-0 top-0 z-10">
       <div className="p-6 border-b border-select-border">
-        <h1 className="text-2xl font-bold text-logo-indigo font-inter">
-          ExamVault
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
+          ExamVault<span className="text-[var(--marker)]">.</span>
         </h1>
       </div>
 

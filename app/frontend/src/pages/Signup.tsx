@@ -167,17 +167,18 @@ export const Signup = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#E4F6F8] dark:bg-[#0D1B1E] flex items-center justify-center p-4">
-      <div
-        className="w-full max-w-md bg-blue-100 dark:bg-[#15202B] text-black dark:text-white rounded-lg shadow-xl ring-4 ring-blue-300 dark:ring-cyan-400 dark:shadow-cyan-500/20 p-8 animate-glow-slow"
-        style={
-          {
-            '--glow-color': '#60a5fa',
-            colorScheme: 'light dark',
-          } as React.CSSProperties
-        }
-      >
-        <h1 className="text-3xl font-bold mb-6 text-center">Sign Up</h1>
+    <div className="fixed inset-0 paper grain relative flex items-center justify-center p-4 overflow-y-auto text-[var(--ink)]">
+      <div className="w-full max-w-md sheet rounded-lg p-8 relative my-8">
+        <span
+          className="absolute left-5 top-6 bottom-6 w-px bg-[rgba(193,18,31,0.25)]"
+          aria-hidden="true"
+        />
+        <p className="font-mono-plex text-[10px] uppercase tracking-[0.25em] text-[var(--ink-faint)] mb-2">
+          New instructor
+        </p>
+        <h1 className="font-display text-3xl font-semibold mb-6">
+          Create your account<span className="text-[var(--marker)]">.</span>
+        </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -327,22 +328,30 @@ export const Signup = () => {
             )}
           </div>
 
-          {error && <div className="text-red-600 text-sm">{error}</div>}
-          {success && <div className="text-green-600 text-sm">{success}</div>}
+          {error && (
+            <div className="text-[var(--marker)] text-sm border-l-2 border-[var(--marker)] pl-3">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="text-[var(--correct)] text-sm border-l-2 border-[var(--correct)] pl-3">
+              {success}
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50"
+            className="btn-marker w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Registering...' : 'Sign Up'}
+            {loading ? 'Registering…' : 'Create account'}
           </button>
         </form>
 
-        <div className="mt-4 text-sm text-center text-gray-700 dark:text-gray-300">
+        <div className="mt-4 text-sm text-center text-[var(--ink-soft)]">
           Already have an account?{' '}
-          <Link to="/login" className="text-blue-600 hover:underline">
-            Login
+          <Link to="/login" className="link-underline font-semibold">
+            Sign in
           </Link>
         </div>
       </div>

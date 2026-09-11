@@ -61,8 +61,21 @@ body {
 .paper {
   background-color: var(--paper);
   background-image:
-    linear-gradient(90deg, transparent 0, transparent calc(1.25rem - 1px), rgba(193, 18, 31, 0.22) calc(1.25rem - 1px), rgba(193, 18, 31, 0.22) 1.25rem, transparent 1.25rem),
-    repeating-linear-gradient(to bottom, transparent 0, transparent calc(2.25rem - 1px), var(--rule) calc(2.25rem - 1px), var(--rule) 2.25rem);
+    linear-gradient(
+      90deg,
+      transparent 0,
+      transparent calc(1.25rem - 1px),
+      rgba(193, 18, 31, 0.22) calc(1.25rem - 1px),
+      rgba(193, 18, 31, 0.22) 1.25rem,
+      transparent 1.25rem
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(2.25rem - 1px),
+      var(--rule) calc(2.25rem - 1px),
+      var(--rule) 2.25rem
+    );
 }
 
 /* Paper sheet with a hairline ink border and a soft cast shadow */
@@ -101,7 +114,10 @@ body {
   border-radius: 0.5rem;
   padding: 0.75rem 1.5rem;
   box-shadow: 3px 3px 0 var(--ink);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
 }
 .btn-marker:hover {
   background: var(--marker-deep);
@@ -125,7 +141,9 @@ body {
   border: 1.5px solid var(--ink);
   border-radius: 0.5rem;
   padding: 0.75rem 1.5rem;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 .btn-ink:hover {
   background: var(--ink);
@@ -165,7 +183,10 @@ body {
   border-radius: 9999px;
   border: 2px solid currentColor;
   flex: none;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
 .omr-row:hover .omr-bubble {
   transform: scale(1.15);
@@ -180,15 +201,29 @@ body {
 
 /* Hero artifact: cycles the marked bubble A→B→C→D like a scanner reading */
 @keyframes omr-scan {
-  0%, 24% { fill: var(--marker); opacity: 1; }
-  25%, 100% { fill: transparent; opacity: 0.85; }
+  0%,
+  24% {
+    fill: var(--marker);
+    opacity: 1;
+  }
+  25%,
+  100% {
+    fill: transparent;
+    opacity: 0.85;
+  }
 }
 .omr-scan-bubble {
   animation: omr-scan 5.2s infinite;
 }
-.omr-scan-bubble:nth-of-type(2) { animation-delay: 1.3s; }
-.omr-scan-bubble:nth-of-type(3) { animation-delay: 2.6s; }
-.omr-scan-bubble:nth-of-type(4) { animation-delay: 3.9s; }
+.omr-scan-bubble:nth-of-type(2) {
+  animation-delay: 1.3s;
+}
+.omr-scan-bubble:nth-of-type(3) {
+  animation-delay: 2.6s;
+}
+.omr-scan-bubble:nth-of-type(4) {
+  animation-delay: 3.9s;
+}
 
 /* --------------------------------------------------------------------------
    Motion — one orchestrated page-load reveal, staggered
@@ -208,11 +243,21 @@ body {
   opacity: 0;
   animation: rise-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
-.reveal-1 { animation-delay: 0.05s; }
-.reveal-2 { animation-delay: 0.18s; }
-.reveal-3 { animation-delay: 0.31s; }
-.reveal-4 { animation-delay: 0.44s; }
-.reveal-5 { animation-delay: 0.57s; }
+.reveal-1 {
+  animation-delay: 0.05s;
+}
+.reveal-2 {
+  animation-delay: 0.18s;
+}
+.reveal-3 {
+  animation-delay: 0.31s;
+}
+.reveal-4 {
+  animation-delay: 0.44s;
+}
+.reveal-5 {
+  animation-delay: 0.57s;
+}
 
 @keyframes tilt-in {
   from {

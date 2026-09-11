@@ -46,6 +46,13 @@ vercel deploy --prod
 vercel alias set <new-deployment-url> exam-vault-five.vercel.app
 ```
 
+If the site ever 404s (the production domain intermittently unbinds after
+deploys — Vercel-side quirk), one command fixes it:
+
+```bash
+bash scripts/fix-prod-domain.sh
+```
+
 ## Environment variables (Vercel project settings)
 
 | Variable | Value |

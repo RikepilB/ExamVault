@@ -8,21 +8,25 @@ class GlobalHealthCheckView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    SERVICE_URLS = {
-        "users": "http://backend:8000/api/auth/health/",
-        "courses": "http://backend:8000/api/courses/health/",  # Added courses
-        "exams": "http://backend:8000/api/exams/health/",
-        "questions": "http://backend:8000/api/questions/health/",
-        "analytics": "http://backend:8000/api/analytics/health/",
-        "results": "http://backend:8000/api/results/health/",
+    SERVICE_PATHS = {
+        "users": "/api/auth/health/",
+        "courses": "/api/courses/health/",
+        "exams": "/api/exams/health/",
+        "questions": "/api/questions/health/",
+        "analytics": "/api/analytics/health/",
+        "results": "/api/results/health/",
     }
 
     def get(self, request):
+        # Probe each service through this request's own host so the check works
+        # everywhere (docker-compose, Render, serverless) instead of assuming
+        # the compose-internal "http://backend:8000" hostname.
+        base = f"{'https' if request.is_secure() else 'http'}://{request.get_host()}"
         health_data = {}
 
-        for name, url in self.SERVICE_URLS.items():
+        for name, path in self.SERVICE_PATHS.items():
             try:
-                r = requests.get(url, timeout=2)
+                r = requests.get(f"{base}{path}", timeout=5)
                 if r.status_code == 200:
                     # store full JSON:
                     # {"status":"ok","service":...,"database":...}

@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ExamExportHistoryViewSet,
     ExamViewSet,
+    ExamsHealthCheckView,
     VariantViewSet,
     admin_create_template,
     admin_delete_template,
@@ -21,6 +22,9 @@ router.register(r"", ExamViewSet, basename="exam")
 
 
 urlpatterns = [
+    # Health check must precede the router so "health/" isn't matched as an
+    # exam pk by the catch-all `r""` registration.
+    path("health/", ExamsHealthCheckView.as_view(), name="exams-health"),
     path("", include(router.urls)),
     # Template endpoints
     path("templates/layout/", template_layout_api, name="template-layout"),

@@ -2,7 +2,13 @@ import os  # ADD THIS LINE
 from pathlib import Path
 
 LOG_DIR = Path(os.getenv("LOG_ROOT", "./logs")).resolve()
-LOG_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    # Serverless/read-only filesystems (e.g. Vercel's /var/task): fall back to
+    # the writable temp directory instead of failing settings import.
+    LOG_DIR = Path("/tmp/examvault-logs")
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def build_logging():

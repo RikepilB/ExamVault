@@ -20,7 +20,7 @@ mkdir -p "$DEST"
 
 # Backend source (no caches, env files, venvs, or stale collectstatic output).
 cp -r "$ROOT/app/backend" "$DEST/backend"
-find "$DEST/backend" -type d \( -name '__pycache__' -o -name '.venv*' -o -name 'staticfiles' \) -exec rm -rf {} +
+find "$DEST/backend" -type d \( -name '__pycache__' -o -name '.venv*' -o -name 'staticfiles' -o -name 'logs' \) -exec rm -rf {} +
 rm -f "$DEST/backend/.env"
 # Not used by the serverless target (Vercel builds api/requirements.txt instead).
 rm -f "$DEST/backend/requirements.txt" "$DEST/backend/Dockerfile" \

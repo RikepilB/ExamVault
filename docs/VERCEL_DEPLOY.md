@@ -42,6 +42,8 @@ cd ../..
 # 4. Deploy to production (deploy-vercel/ is linked to project exam-vault-five)
 cd deploy-vercel
 vercel deploy --prod
+# 5. Re-point the public domain (manual aliases don't follow new prod deploys)
+vercel alias set <new-deployment-url> exam-vault-five.vercel.app
 ```
 
 ## Environment variables (Vercel project settings)
@@ -56,6 +58,7 @@ vercel deploy --prod
 | `FRONTEND_URL` | `https://exam-vault-five.vercel.app` |
 | `EMAIL_BACKEND` | `django.core.mail.backends.console.EmailBackend` |
 | `DB_SSL_REQUIRED` | `True` |
+| `LOG_ROOT` | `/tmp/examvault-logs` (function filesystem is read-only except `/tmp`) |
 | `DATABASE_URL` | Neon pooled connection string (injected by the Neon integration) |
 | `VITE_API_BASE_URL` | empty — the SPA uses same-origin `/api` |
 

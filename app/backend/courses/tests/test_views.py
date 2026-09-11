@@ -11,6 +11,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from courses.models import Course
+from courses.tests.utils import add_accepted_instructor
 
 User = get_user_model()
 
@@ -94,6 +95,7 @@ class CourseViewsTests(TestCase):
         course = Course.objects.create(
             code="CHEM101", name="General Chemistry", term="Fall 2025"
         )
+        add_accepted_instructor(course, self.instructor)
         detail_url = reverse("course-detail", args=[course.id])
 
         # Authenticate as instructor (read allowed)

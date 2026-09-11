@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from courses.models import Course
+from courses.tests.utils import add_accepted_instructor
 from questions.models import Question, QuestionBank
 from users.models import User
 
@@ -17,7 +18,7 @@ class QuestionAPITests(TestCase):
         )
         self.client.force_authenticate(user=self.user)
         self.course = Course.objects.create(code="CS101", name="CS", term="2025W1")
-        self.course.instructors.add(self.user)
+        add_accepted_instructor(self.course, self.user)
         self.bank = QuestionBank.objects.create(
             course=self.course, title="API Bank", created_by=self.user
         )
@@ -26,6 +27,7 @@ class QuestionAPITests(TestCase):
     def test_create_question_with_and_without_difficulty(self):
         # With difficulty
         data = {
+            "bank": self.bank.id,
             "prompt": "What is 2+2?",
             "choices": {"A": "3", "B": "4", "C": "5", "D": "6"},
             "correct_answer": ["B"],

@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from courses.models import Course, CourseInstructor, Student
+from courses.tests.utils import add_accepted_instructor
 from exams.models import Exam
 
 User = get_user_model()
@@ -58,7 +59,7 @@ class CourseOverviewTests(TestCase):
             term="Fall 2025",
             instructor=self.instructor1.name,
         )
-        course.instructors.add(self.instructor1)
+        add_accepted_instructor(course, self.instructor1)
 
         url = reverse("course-detail", kwargs={"pk": course.pk})
         response = self.client.get(url)
@@ -157,7 +158,7 @@ class CourseOverviewTests(TestCase):
             term="Fall 2025",
             instructor=self.instructor1.name,
         )
-        course.instructors.add(self.instructor1)
+        add_accepted_instructor(course, self.instructor1)
 
         # Add students
         for i in range(3):
@@ -206,7 +207,7 @@ class CourseOverviewTests(TestCase):
             created_at=timezone.now() - timedelta(days=5),
             updated_at=timezone.now() - timedelta(days=2),
         )
-        course.instructors.add(self.instructor1)
+        add_accepted_instructor(course, self.instructor1)
 
         # Get course detail
         url = reverse("course-detail", kwargs={"pk": course.pk})
@@ -225,7 +226,7 @@ class CourseOverviewTests(TestCase):
             term="Fall 2025",
             # No instructor field
         )
-        course.instructors.add(self.instructor1)
+        add_accepted_instructor(course, self.instructor1)
 
         url = reverse("course-detail", kwargs={"pk": course.pk})
         response = self.client.get(url)
@@ -328,7 +329,7 @@ class CourseOverviewTests(TestCase):
             term="Fall 2025",
             instructor="",  # Empty string
         )
-        course.instructors.add(self.instructor1)
+        add_accepted_instructor(course, self.instructor1)
 
         url = reverse("course-detail", kwargs={"pk": course.pk})
         response = self.client.get(url)

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from datetime import timedelta
 import os
+import sys
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
@@ -190,6 +191,21 @@ REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {
     "auth_admin_login": "5/min",
     "auth_admin_refresh": "10/min",
 }
+# The test suite logs in far more than 5 times per minute (helpers authenticate
+# per test), so the auth throttles would 429 the suite itself. Some views also
+# declare ScopedRateThrottle directly, so the rates (not just the classes) must
+# stay defined — raise them to effectively unlimited for test runs instead.
+if "test" in sys.argv or "pytest" in sys.argv:
+    REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {
+        scope: "10000/min"
+        for scope in (
+            "auth_register",
+            "auth_login",
+            "auth_forgot_password",
+            "auth_admin_login",
+            "auth_admin_refresh",
+        )
+    }
 # --- end rate limiting block ---
 
 SIMPLE_JWT = {

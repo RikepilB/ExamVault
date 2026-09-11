@@ -5,6 +5,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from courses.models import Course
+from courses.tests.utils import add_accepted_instructor
 from questions.models import Question, QuestionBank
 from users.models import User
 
@@ -21,7 +22,7 @@ class CSVUploadTests(TestCase):
         self.client.force_authenticate(user=self.user)
 
         self.course = Course.objects.create(code="MATH101", name="Math", term="2025W1")
-        self.course.instructors.add(self.user)
+        add_accepted_instructor(self.course, self.user)
 
         self.bank = QuestionBank.objects.create(
             course=self.course, title="Bank 1", created_by=self.user

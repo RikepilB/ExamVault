@@ -258,7 +258,14 @@ export const Signup = () => {
             onChange={handleChange}
             aria-invalid={Boolean(fieldErrors.password)}
             aria-describedby={
-              fieldErrors.password ? 'password-error' : undefined
+              [
+                fieldErrors.password ? 'password-error' : '',
+                data.password && !allPasswordCriteriaMet(data.password)
+                  ? 'password-criteria'
+                  : '',
+              ]
+                .filter(Boolean)
+                .join(' ') || undefined
             }
             className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
               fieldErrors.password
@@ -278,7 +285,7 @@ export const Signup = () => {
         </div>
 
         {data.password && !allPasswordCriteriaMet(data.password) && (
-          <ul className="text-sm mt-2 space-y-1">
+          <ul id="password-criteria" className="text-sm mt-2 space-y-1">
             <li
               className={
                 isLongEnough(data.password) ? 'text-green-600' : 'text-red-500'

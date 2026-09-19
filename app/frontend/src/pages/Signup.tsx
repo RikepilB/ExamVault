@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { registerInstructor } from '../api/auth';
+import { AuthPageLayout } from '../components/AuthPageLayout';
 
 // Validator functions
 const validateEmail = (email: string) =>
@@ -167,21 +168,17 @@ export const Signup = () => {
   };
 
   return (
-    <div className="fixed inset-0 paper grain relative flex items-center justify-center p-4 overflow-y-auto text-[var(--ink)]">
-      <div className="w-full max-w-md sheet rounded-lg p-8 relative my-8">
-        <span
-          className="absolute left-5 top-6 bottom-6 w-px bg-[rgba(193,18,31,0.25)]"
-          aria-hidden="true"
-        />
+    <AuthPageLayout mode="signup">
         <p className="font-mono-plex text-[10px] uppercase tracking-[0.25em] text-[var(--ink-faint)] mb-2">
           New instructor
         </p>
-        <h1 className="font-display text-3xl font-semibold mb-6">
+        <h1 className="font-display text-4xl font-semibold mb-3">
           Create your account<span className="text-[var(--marker)]">.</span>
         </h1>
+        <p className="text-[var(--ink-soft)] mb-8">Start with a course and a question bank.</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {['firstname', 'lastname'].map((field) => (
               <div key={field}>
                 <label
@@ -193,15 +190,18 @@ export const Signup = () => {
                 <input
                   type="text"
                   id={field}
+                  autoComplete={field === 'firstname' ? 'given-name' : 'family-name'}
                   value={data[field as keyof ExtendedUserModel]}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded bg-white dark:bg-gray-900 text-black dark:text-white ${
-                    fieldErrors[field] ? 'border-red-500' : 'border-gray-300'
+                  aria-invalid={Boolean(fieldErrors[field])}
+                  aria-describedby={fieldErrors[field] ? `${field}-error` : undefined}
+                  className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
+                    fieldErrors[field] ? 'border-[var(--marker)]' : 'border-[rgba(27,36,49,0.45)]'
                   }`}
                   required
                 />
                 {fieldErrors[field] && (
-                  <p className="text-red-500 text-sm">{fieldErrors[field]}</p>
+                  <p id={`${field}-error`} className="mt-1 text-[var(--marker)] text-sm">{fieldErrors[field]}</p>
                 )}
               </div>
             ))}
@@ -214,16 +214,17 @@ export const Signup = () => {
             <input
               type="email"
               id="email"
+              autoComplete="email"
               value={data.email}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded bg-white dark:bg-gray-900 text-black dark:text-white ${
-                fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+              aria-invalid={Boolean(fieldErrors.email)}
+              aria-describedby={fieldErrors.email ? 'email-error' : undefined}
+              className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
+                fieldErrors.email ? 'border-[var(--marker)]' : 'border-[rgba(27,36,49,0.45)]'
               }`}
               required
             />
-            {fieldErrors.email && (
-              <p className="text-red-500 text-sm">{fieldErrors.email}</p>
-            )}
+              {fieldErrors.email && <p id="email-error" className="mt-1 text-[var(--marker)] text-sm">{fieldErrors.email}</p>}
           </div>
 
           <div>
@@ -236,15 +237,18 @@ export const Signup = () => {
             <input
               type="password"
               id="password"
+              autoComplete="new-password"
               value={data.password}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded bg-white dark:bg-gray-900 text-black dark:text-white ${
-                fieldErrors.password ? 'border-red-500' : 'border-gray-300'
+              aria-invalid={Boolean(fieldErrors.password)}
+              aria-describedby={fieldErrors.password ? 'password-error' : undefined}
+              className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
+                fieldErrors.password ? 'border-[var(--marker)]' : 'border-[rgba(27,36,49,0.45)]'
               }`}
               required
             />
             {fieldErrors.password && (
-              <p className="text-red-500 text-sm whitespace-pre-line mt-1">
+              <p id="password-error" className="text-[var(--marker)] text-sm whitespace-pre-line mt-1">
                 {fieldErrors.password}
               </p>
             )}
@@ -312,29 +316,32 @@ export const Signup = () => {
             <input
               type="password"
               id="confirmPassword"
+              autoComplete="new-password"
               value={data.confirmPassword}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded bg-white dark:bg-gray-900 text-black dark:text-white ${
+              aria-invalid={Boolean(fieldErrors.confirmPassword)}
+              aria-describedby={fieldErrors.confirmPassword ? 'confirmPassword-error' : undefined}
+              className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
                 fieldErrors.confirmPassword
-                  ? 'border-red-500'
-                  : 'border-gray-300'
+                  ? 'border-[var(--marker)]'
+                  : 'border-[rgba(27,36,49,0.45)]'
               }`}
               required
             />
             {fieldErrors.confirmPassword && (
-              <p className="text-red-500 text-sm">
+              <p id="confirmPassword-error" className="mt-1 text-[var(--marker)] text-sm">
                 {fieldErrors.confirmPassword}
               </p>
             )}
           </div>
 
           {error && (
-            <div className="text-[var(--marker)] text-sm border-l-2 border-[var(--marker)] pl-3">
+            <div role="alert" className="text-[var(--marker)] text-sm border-l-2 border-[var(--marker)] pl-3">
               {error}
             </div>
           )}
           {success && (
-            <div className="text-[var(--correct)] text-sm border-l-2 border-[var(--correct)] pl-3">
+            <div role="status" className="text-[var(--correct)] text-sm border-l-2 border-[var(--correct)] pl-3">
               {success}
             </div>
           )}
@@ -342,7 +349,7 @@ export const Signup = () => {
           <button
             type="submit"
             disabled={loading}
-            className="btn-marker w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-marker w-full min-h-12 justify-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--marker)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Registering…' : 'Create account'}
           </button>
@@ -350,11 +357,10 @@ export const Signup = () => {
 
         <div className="mt-4 text-sm text-center text-[var(--ink-soft)]">
           Already have an account?{' '}
-          <Link to="/login" className="link-underline font-semibold">
+          <Link to="/login" className="inline-flex min-h-11 items-center link-underline font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker)]">
             Sign in
           </Link>
         </div>
-      </div>
-    </div>
+    </AuthPageLayout>
   );
 };

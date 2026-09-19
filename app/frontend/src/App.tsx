@@ -60,7 +60,7 @@ function AppContent() {
   const isAdminRoute = location.pathname.startsWith('/admin-panel');
 
   return (
-    <div className="min-h-screen min-w-[100vw] bg-gray-50">
+    <div className="min-h-screen w-full bg-gray-50">
       {/* show navbar only on non-admin pages */}
       {!isAdminRoute && <Navigation />}
 

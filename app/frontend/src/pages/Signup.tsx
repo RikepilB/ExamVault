@@ -169,198 +169,229 @@ export const Signup = () => {
 
   return (
     <AuthPageLayout mode="signup">
-        <p className="font-mono-plex text-[10px] uppercase tracking-[0.25em] text-[var(--ink-faint)] mb-2">
-          New instructor
-        </p>
-        <h1 className="font-display text-4xl font-semibold mb-3">
-          Create your account<span className="text-[var(--marker)]">.</span>
-        </h1>
-        <p className="text-[var(--ink-soft)] mb-8">Start with a course and a question bank.</p>
+      <p className="font-mono-plex text-[10px] uppercase tracking-[0.25em] text-[var(--ink-faint)] mb-2">
+        New instructor
+      </p>
+      <h1 className="font-display text-4xl font-semibold mb-3">
+        Create your account<span className="text-[var(--marker)]">.</span>
+      </h1>
+      <p className="text-[var(--ink-soft)] mb-8">
+        Start with a course and a question bank.
+      </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {['firstname', 'lastname'].map((field) => (
-              <div key={field}>
-                <label
-                  htmlFor={field}
-                  className="block text-sm font-medium mb-1 capitalize"
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {['firstname', 'lastname'].map((field) => (
+            <div key={field}>
+              <label
+                htmlFor={field}
+                className="block text-sm font-medium mb-1 capitalize"
+              >
+                {field === 'firstname' ? 'First Name' : 'Last Name'}
+              </label>
+              <input
+                type="text"
+                id={field}
+                autoComplete={
+                  field === 'firstname' ? 'given-name' : 'family-name'
+                }
+                value={data[field as keyof ExtendedUserModel]}
+                onChange={handleChange}
+                aria-invalid={Boolean(fieldErrors[field])}
+                aria-describedby={
+                  fieldErrors[field] ? `${field}-error` : undefined
+                }
+                className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
+                  fieldErrors[field]
+                    ? 'border-[var(--marker)]'
+                    : 'border-[rgba(27,36,49,0.45)]'
+                }`}
+                required
+              />
+              {fieldErrors[field] && (
+                <p
+                  id={`${field}-error`}
+                  className="mt-1 text-[var(--marker)] text-sm"
                 >
-                  {field === 'firstname' ? 'First Name' : 'Last Name'}
-                </label>
-                <input
-                  type="text"
-                  id={field}
-                  autoComplete={field === 'firstname' ? 'given-name' : 'family-name'}
-                  value={data[field as keyof ExtendedUserModel]}
-                  onChange={handleChange}
-                  aria-invalid={Boolean(fieldErrors[field])}
-                  aria-describedby={fieldErrors[field] ? `${field}-error` : undefined}
-                  className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
-                    fieldErrors[field] ? 'border-[var(--marker)]' : 'border-[rgba(27,36,49,0.45)]'
-                  }`}
-                  required
-                />
-                {fieldErrors[field] && (
-                  <p id={`${field}-error`} className="mt-1 text-[var(--marker)] text-sm">{fieldErrors[field]}</p>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              autoComplete="email"
-              value={data.email}
-              onChange={handleChange}
-              aria-invalid={Boolean(fieldErrors.email)}
-              aria-describedby={fieldErrors.email ? 'email-error' : undefined}
-              className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
-                fieldErrors.email ? 'border-[var(--marker)]' : 'border-[rgba(27,36,49,0.45)]'
-              }`}
-              required
-            />
-              {fieldErrors.email && <p id="email-error" className="mt-1 text-[var(--marker)] text-sm">{fieldErrors.email}</p>}
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium mb-1"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              autoComplete="new-password"
-              value={data.password}
-              onChange={handleChange}
-              aria-invalid={Boolean(fieldErrors.password)}
-              aria-describedby={fieldErrors.password ? 'password-error' : undefined}
-              className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
-                fieldErrors.password ? 'border-[var(--marker)]' : 'border-[rgba(27,36,49,0.45)]'
-              }`}
-              required
-            />
-            {fieldErrors.password && (
-              <p id="password-error" className="text-[var(--marker)] text-sm whitespace-pre-line mt-1">
-                {fieldErrors.password}
-              </p>
-            )}
-          </div>
-
-          {data.password && !allPasswordCriteriaMet(data.password) && (
-            <ul className="text-sm mt-2 space-y-1">
-              <li
-                className={
-                  isLongEnough(data.password)
-                    ? 'text-green-600'
-                    : 'text-red-500'
-                }
-              >
-                {isLongEnough(data.password) ? '✓' : '✗'} At least 8 characters
-                long
-              </li>
-              <li
-                className={
-                  hasUppercase(data.password)
-                    ? 'text-green-600'
-                    : 'text-red-500'
-                }
-              >
-                {hasUppercase(data.password) ? '✓' : '✗'} At least 1 uppercase
-                letter (A-Z)
-              </li>
-              <li
-                className={
-                  hasLowercase(data.password)
-                    ? 'text-green-600'
-                    : 'text-red-500'
-                }
-              >
-                {hasLowercase(data.password) ? '✓' : '✗'} At least 1 lowercase
-                letter (a-z)
-              </li>
-              <li
-                className={
-                  hasNumber(data.password) ? 'text-green-600' : 'text-red-500'
-                }
-              >
-                {hasNumber(data.password) ? '✓' : '✗'} At least 1 number (0-9)
-              </li>
-              <li
-                className={
-                  hasSpecialChar(data.password)
-                    ? 'text-green-600'
-                    : 'text-red-500'
-                }
-              >
-                {hasSpecialChar(data.password) ? '✓' : '✗'} At least 1 special
-                character (!@#$...)
-              </li>
-            </ul>
-          )}
-
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium mb-1"
-            >
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              autoComplete="new-password"
-              value={data.confirmPassword}
-              onChange={handleChange}
-              aria-invalid={Boolean(fieldErrors.confirmPassword)}
-              aria-describedby={fieldErrors.confirmPassword ? 'confirmPassword-error' : undefined}
-              className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
-                fieldErrors.confirmPassword
-                  ? 'border-[var(--marker)]'
-                  : 'border-[rgba(27,36,49,0.45)]'
-              }`}
-              required
-            />
-            {fieldErrors.confirmPassword && (
-              <p id="confirmPassword-error" className="mt-1 text-[var(--marker)] text-sm">
-                {fieldErrors.confirmPassword}
-              </p>
-            )}
-          </div>
-
-          {error && (
-            <div role="alert" className="text-[var(--marker)] text-sm border-l-2 border-[var(--marker)] pl-3">
-              {error}
+                  {fieldErrors[field]}
+                </p>
+              )}
             </div>
-          )}
-          {success && (
-            <div role="status" className="text-[var(--correct)] text-sm border-l-2 border-[var(--correct)] pl-3">
-              {success}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-marker w-full min-h-12 justify-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--marker)] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Registering…' : 'Create account'}
-          </button>
-        </form>
-
-        <div className="mt-4 text-sm text-center text-[var(--ink-soft)]">
-          Already have an account?{' '}
-          <Link to="/login" className="inline-flex min-h-11 items-center link-underline font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker)]">
-            Sign in
-          </Link>
+          ))}
         </div>
+
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium mb-1">
+            Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            autoComplete="email"
+            value={data.email}
+            onChange={handleChange}
+            aria-invalid={Boolean(fieldErrors.email)}
+            aria-describedby={fieldErrors.email ? 'email-error' : undefined}
+            className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
+              fieldErrors.email
+                ? 'border-[var(--marker)]'
+                : 'border-[rgba(27,36,49,0.45)]'
+            }`}
+            required
+          />
+          {fieldErrors.email && (
+            <p id="email-error" className="mt-1 text-[var(--marker)] text-sm">
+              {fieldErrors.email}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium mb-1">
+            Password
+          </label>
+          <input
+            type="password"
+            id="password"
+            autoComplete="new-password"
+            value={data.password}
+            onChange={handleChange}
+            aria-invalid={Boolean(fieldErrors.password)}
+            aria-describedby={
+              fieldErrors.password ? 'password-error' : undefined
+            }
+            className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
+              fieldErrors.password
+                ? 'border-[var(--marker)]'
+                : 'border-[rgba(27,36,49,0.45)]'
+            }`}
+            required
+          />
+          {fieldErrors.password && (
+            <p
+              id="password-error"
+              className="text-[var(--marker)] text-sm whitespace-pre-line mt-1"
+            >
+              {fieldErrors.password}
+            </p>
+          )}
+        </div>
+
+        {data.password && !allPasswordCriteriaMet(data.password) && (
+          <ul className="text-sm mt-2 space-y-1">
+            <li
+              className={
+                isLongEnough(data.password) ? 'text-green-600' : 'text-red-500'
+              }
+            >
+              {isLongEnough(data.password) ? '✓' : '✗'} At least 8 characters
+              long
+            </li>
+            <li
+              className={
+                hasUppercase(data.password) ? 'text-green-600' : 'text-red-500'
+              }
+            >
+              {hasUppercase(data.password) ? '✓' : '✗'} At least 1 uppercase
+              letter (A-Z)
+            </li>
+            <li
+              className={
+                hasLowercase(data.password) ? 'text-green-600' : 'text-red-500'
+              }
+            >
+              {hasLowercase(data.password) ? '✓' : '✗'} At least 1 lowercase
+              letter (a-z)
+            </li>
+            <li
+              className={
+                hasNumber(data.password) ? 'text-green-600' : 'text-red-500'
+              }
+            >
+              {hasNumber(data.password) ? '✓' : '✗'} At least 1 number (0-9)
+            </li>
+            <li
+              className={
+                hasSpecialChar(data.password)
+                  ? 'text-green-600'
+                  : 'text-red-500'
+              }
+            >
+              {hasSpecialChar(data.password) ? '✓' : '✗'} At least 1 special
+              character (!@#$...)
+            </li>
+          </ul>
+        )}
+
+        <div>
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium mb-1"
+          >
+            Confirm Password
+          </label>
+          <input
+            type="password"
+            id="confirmPassword"
+            autoComplete="new-password"
+            value={data.confirmPassword}
+            onChange={handleChange}
+            aria-invalid={Boolean(fieldErrors.confirmPassword)}
+            aria-describedby={
+              fieldErrors.confirmPassword ? 'confirmPassword-error' : undefined
+            }
+            className={`w-full min-h-11 px-3 py-2 border rounded bg-white text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--marker)] ${
+              fieldErrors.confirmPassword
+                ? 'border-[var(--marker)]'
+                : 'border-[rgba(27,36,49,0.45)]'
+            }`}
+            required
+          />
+          {fieldErrors.confirmPassword && (
+            <p
+              id="confirmPassword-error"
+              className="mt-1 text-[var(--marker)] text-sm"
+            >
+              {fieldErrors.confirmPassword}
+            </p>
+          )}
+        </div>
+
+        {error && (
+          <div
+            role="alert"
+            className="text-[var(--marker)] text-sm border-l-2 border-[var(--marker)] pl-3"
+          >
+            {error}
+          </div>
+        )}
+        {success && (
+          <div
+            role="status"
+            className="text-[var(--correct)] text-sm border-l-2 border-[var(--correct)] pl-3"
+          >
+            {success}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-marker w-full min-h-12 justify-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--marker)] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? 'Registering…' : 'Create account'}
+        </button>
+      </form>
+
+      <div className="mt-4 text-sm text-center text-[var(--ink-soft)]">
+        Already have an account?{' '}
+        <Link
+          to="/login"
+          className="inline-flex min-h-11 items-center link-underline font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marker)]"
+        >
+          Sign in
+        </Link>
+      </div>
     </AuthPageLayout>
   );
 };

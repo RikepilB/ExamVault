@@ -213,10 +213,7 @@ export const Home = () => {
                 Create an instructor account →
               </Link>
             )}
-            <a
-              href="#product-preview"
-              className="btn-ink text-base"
-            >
+            <a href="#product-preview" className="btn-ink text-base">
               See the workflow ↓
             </a>
           </div>
@@ -228,21 +225,52 @@ export const Home = () => {
         <AnswerSheetArtifact />
       </section>
 
-      <section id="product-preview" className="relative border-y border-[rgba(27,36,49,0.25)] bg-[var(--paper-deep)] scroll-mt-6">
+      <section
+        id="product-preview"
+        className="relative border-y border-[rgba(27,36,49,0.25)] bg-[var(--paper-deep)] scroll-mt-6"
+      >
         <div className="max-w-6xl mx-auto px-6 py-16 sm:py-20">
           <div className="max-w-2xl mb-10">
-            <p className="font-mono-plex text-xs uppercase tracking-[0.2em] text-[var(--marker)] mb-3">Inside ExamVault</p>
-            <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-3">See the exam builder</h2>
-            <p className="text-[var(--ink-soft)]">Actual screens from the exam creation walkthrough in the repository. Configure the paper, review the variant strategy, and generate the set.</p>
+            <p className="font-mono-plex text-xs uppercase tracking-[0.2em] text-[var(--marker)] mb-3">
+              Inside ExamVault
+            </p>
+            <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-3">
+              See the exam builder
+            </h2>
+            <p className="text-[var(--ink-soft)]">
+              Actual screens from the exam creation walkthrough in the
+              repository. Configure the paper, review the variant strategy, and
+              generate the set.
+            </p>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             <figure className="sheet rounded-lg overflow-hidden">
-              <img src="/images/exam-wizard-start.png" alt="Exam information step with sample course, exam name and date fields" loading="lazy" className="block w-full aspect-[16/10] object-cover object-top" />
-              <figcaption className="border-t border-[var(--rule)] px-5 py-4 text-sm"><span className="font-mono-plex text-[var(--marker)] mr-3">01</span>Set up the exam</figcaption>
+              <img
+                src="/images/exam-wizard-start.png"
+                alt="Exam information step with sample course, exam name and date fields"
+                loading="lazy"
+                className="block w-full aspect-[16/10] object-cover object-top"
+              />
+              <figcaption className="border-t border-[var(--rule)] px-5 py-4 text-sm">
+                <span className="font-mono-plex text-[var(--marker)] mr-3">
+                  01
+                </span>
+                Set up the exam
+              </figcaption>
             </figure>
             <figure className="sheet rounded-lg overflow-hidden">
-              <img src="/images/exam-wizard-review.png" alt="Review step showing sample exam summary and variant configuration" loading="lazy" className="block w-full aspect-[16/10] object-cover object-top" />
-              <figcaption className="border-t border-[var(--rule)] px-5 py-4 text-sm"><span className="font-mono-plex text-[var(--marker)] mr-3">02</span>Review and generate variants</figcaption>
+              <img
+                src="/images/exam-wizard-review.png"
+                alt="Review step showing sample exam summary and variant configuration"
+                loading="lazy"
+                className="block w-full aspect-[16/10] object-cover object-top"
+              />
+              <figcaption className="border-t border-[var(--rule)] px-5 py-4 text-sm">
+                <span className="font-mono-plex text-[var(--marker)] mr-3">
+                  02
+                </span>
+                Review and generate variants
+              </figcaption>
             </figure>
           </div>
         </div>
@@ -345,7 +373,9 @@ export const Home = () => {
             to={isAuthenticated ? '/dashboard' : '/signup'}
             className="btn-marker text-lg !px-8 !py-4"
           >
-            {isAuthenticated ? 'Open ExamVault →' : 'Create an instructor account →'}
+            {isAuthenticated
+              ? 'Open ExamVault →'
+              : 'Create an instructor account →'}
           </Link>
         </div>
       </section>

@@ -37,7 +37,7 @@ const AnswerSheetArtifact = () => {
             Answer sheet · Form B
           </p>
           <p className="font-mono-plex text-[10px] text-[var(--ink-faint)]">
-            COSC 304
+            Sample course
           </p>
         </div>
 
@@ -84,7 +84,7 @@ const AnswerSheetArtifact = () => {
         {/* registration marks */}
         <div className="mt-6 pt-4 border-t border-dashed border-[rgba(27,36,49,0.25)] flex items-center justify-between">
           <p className="font-mono-plex text-[10px] text-[var(--ink-faint)]">
-            ▪▪ VARIANT 12 OF 24
+            SAMPLE ANSWER SHEET
           </p>
           <div className="flex gap-1.5">
             <span className="w-2 h-2 bg-[var(--ink)]" />
@@ -96,7 +96,7 @@ const AnswerSheetArtifact = () => {
 
       {/* grading stamp */}
       <div className="absolute -right-3 -bottom-5 sm:-right-8 bg-[var(--correct)] text-white font-mono-plex text-xs tracking-widest uppercase px-4 py-2 rotate-[-4deg] border-[1.5px] border-[var(--ink)] shadow-[3px_3px_0_var(--ink)]">
-        24/24 variants
+        OMR ready
       </div>
     </div>
   );
@@ -186,22 +186,22 @@ export const Home = () => {
       </header>
 
       {/* ======================= Hero ======================= */}
-      <section className="relative max-w-6xl mx-auto px-6 pt-16 pb-24 sm:pt-24 grid lg:grid-cols-[1.1fr_0.9fr] gap-16 items-center">
+      <section className="relative max-w-6xl mx-auto px-6 pt-14 pb-20 sm:pt-24 sm:pb-28 grid lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-20 items-center">
         <div>
           <p className="reveal reveal-1 font-mono-plex text-xs tracking-[0.25em] uppercase text-[var(--ink-soft)] mb-6">
             <span className="inline-block w-2 h-2 rounded-full bg-[var(--marker)] mr-2 align-middle" />
             Exam management for educators
           </p>
           <h1 className="reveal reveal-2 font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.02] font-semibold tracking-tight mb-6">
-            Every exam,
+            One question bank.
             <br />
-            <span className="italic font-medium">engineered</span>
+            <span className="italic font-medium">Every exam ready</span>
             <span className="text-[var(--marker)]">.</span>
           </h1>
           <p className="reveal reveal-3 text-lg sm:text-xl text-[var(--ink-soft)] max-w-xl mb-10 leading-relaxed">
-            ExamVault turns a question bank into unique, print-ready exam
-            variants — then scans the results back into analytics. Write
-            questions once; let the machine handle the paperwork.
+            Build distinct exam variants from the questions you already wrote.
+            Export papers and answer sheets, then bring the results back for
+            analysis.
           </p>
           <div className="reveal reveal-4 flex flex-wrap items-center gap-4">
             {isAuthenticated ? (
@@ -210,25 +210,70 @@ export const Home = () => {
               </Link>
             ) : (
               <Link to="/signup" className="btn-marker text-base">
-                Create your first exam →
+                Create an instructor account →
               </Link>
             )}
-            <a
-              href="https://github.com/RikepilB/ExamVault"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-ink text-base"
-            >
-              <GitHubIcon /> View on GitHub
+            <a href="#product-preview" className="btn-ink text-base">
+              See the workflow ↓
             </a>
           </div>
           <p className="reveal reveal-5 mt-8 font-mono-plex text-xs text-[var(--ink-faint)]">
-            // instructor accounts are free during the beta — sign up in under a
-            minute
+            Question bank / variant generation / print export / result analysis
           </p>
         </div>
 
         <AnswerSheetArtifact />
+      </section>
+
+      <section
+        id="product-preview"
+        className="relative border-y border-[rgba(27,36,49,0.25)] bg-[var(--paper-deep)] scroll-mt-6"
+      >
+        <div className="max-w-6xl mx-auto px-6 py-16 sm:py-20">
+          <div className="max-w-2xl mb-10">
+            <p className="font-mono-plex text-xs uppercase tracking-[0.2em] text-[var(--marker)] mb-3">
+              Inside ExamVault
+            </p>
+            <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-3">
+              See the exam builder
+            </h2>
+            <p className="text-[var(--ink-soft)]">
+              Actual screens from the exam creation walkthrough in the
+              repository. Configure the paper, review the variant strategy, and
+              generate the set.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            <figure className="sheet rounded-lg overflow-hidden">
+              <img
+                src="/images/exam-wizard-start.png"
+                alt="Exam information step with sample course, exam name and date fields"
+                loading="lazy"
+                className="block w-full aspect-[16/10] object-cover object-top"
+              />
+              <figcaption className="border-t border-[var(--rule)] px-5 py-4 text-sm">
+                <span className="font-mono-plex text-[var(--marker)] mr-3">
+                  01
+                </span>
+                Set up the exam
+              </figcaption>
+            </figure>
+            <figure className="sheet rounded-lg overflow-hidden">
+              <img
+                src="/images/exam-wizard-review.png"
+                alt="Review step showing sample exam summary and variant configuration"
+                loading="lazy"
+                className="block w-full aspect-[16/10] object-cover object-top"
+              />
+              <figcaption className="border-t border-[var(--rule)] px-5 py-4 text-sm">
+                <span className="font-mono-plex text-[var(--marker)] mr-3">
+                  02
+                </span>
+                Review and generate variants
+              </figcaption>
+            </figure>
+          </div>
+        </div>
       </section>
 
       {/* ======================= Scanner rail ======================= */}
@@ -328,7 +373,9 @@ export const Home = () => {
             to={isAuthenticated ? '/dashboard' : '/signup'}
             className="btn-marker text-lg !px-8 !py-4"
           >
-            {isAuthenticated ? 'Open ExamVault →' : 'Start free →'}
+            {isAuthenticated
+              ? 'Open ExamVault →'
+              : 'Create an instructor account →'}
           </Link>
         </div>
       </section>

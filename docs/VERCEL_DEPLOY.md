@@ -46,6 +46,20 @@ vercel deploy --prod
 vercel alias set <new-deployment-url> exam-vault-five.vercel.app
 ```
 
+The public `.vercel.app` alias is not automatically moved with production deploys.
+After setting it, open `/`, `/login`, `/signup`, and `/api/health/` in an anonymous
+browser. On 2026-09-19, deployment `dpl_E74K3cY1E42kcsGRWQB5hqojxidK` was
+aliased and those routes returned 200. This is a dated verification, not a
+permanent availability claim.
+
+The project uses Vercel Authentication for **preview deployments only**, leaving
+the production demo public. Check with `vercel project protection
+exam-vault-five --format json`; `ssoProtection.deploymentType` should be
+`preview`. If it drifts, set **Only Preview Deployments** in the Vercel
+Deployment Protection settings, or update the project via the authenticated
+Vercel API with `{ "ssoProtection": { "deploymentType": "preview" } }`.
+Do not disable protection for every deployment just to open the public alias.
+
 If the site ever 404s (the production domain intermittently unbinds after
 deploys — Vercel-side quirk), one command fixes it:
 

@@ -21,7 +21,13 @@ session. Solved tasks → one concrete one-liner (file / PR / command).
 
 ---
 
-## Current state — 2026-09-11 (live, complete)
+## Current state — 2026-09-19
+
+The public full-stack demo is reachable anonymously at https://exam-vault-five.vercel.app. PR [#3](https://github.com/RikepilB/ExamVault/pull/3) merged as `dd0aee8` after backend/frontend tests, style, Docker smoke, Vercel, and CodeRabbit passed. The manually deployed production bundle is `dpl_E74K3cY1E42kcsGRWQB5hqojxidK`; the public alias was set to that deployment. Landing, login, and signup each returned 200 without Vercel sign-in at desktop and 320px; the workflow screenshots loaded, `/api/health/` returned 200, and reduced-motion kept the hero visible. Vercel Authentication is set to `preview` so preview deployments remain protected. The production runbook and this session's receipt are in `docs/VERCEL_DEPLOY.md` and `docs/handoff/2026-09-19-public-ui-release/HANDOFF.md`. A new account was not created in production during this visual verification.
+
+## Historical states (superseded by the current state above)
+
+### 2026-09-11 (live, complete)
 
 **ExamVault is LIVE and fully working at https://exam-vault-five.vercel.app** —
 one Vercel project serves the SPA + Django API same-origin; Neon Postgres
@@ -36,7 +42,7 @@ follow new prod deploys). CI green (run 34600901021). Both GitHub issues closed
 runbook: `docs/VERCEL_DEPLOY.md`. Session details:
 `docs/handoff/2026-09-11-vercel-live-and-ci-repair/HANDOFF.md`.
 
-## Current state — 2026-09-11 (redesign live; ONE dashboard toggle pending)
+### 2026-09-11 (redesign live; dashboard toggle pending at the time)
 
 UI redesigned with **"The Graded Paper"** identity (cream/ink/marker-red,
 Fraunces + IBM Plex, OMR-bubble motif): landing, login, signup, favicon,
@@ -50,7 +56,7 @@ Fix is dashboard-only: Project exam-vault-five → Settings → Domains →
 Vercel Authentication → Disabled (or add a custom domain, which is exempt).
 Richard must click it — no CLI/API path with current creds.
 
-## Previous state â€” 2026-07-08
+### 2026-07-08
 
 Repo made AI-native (`project-scaffold`, 59 files) AND deep knowledge transfer **complete**.
 Three root deliverables written: `PROJECT.md` (253 lines, architecture), `GAPS.md` (437 lines,
@@ -66,6 +72,8 @@ access-level. Nothing committed â€” all new files untracked on `main`.
 ---
 
 ## Session index (append-only, newest first)
+
+- **2026-09-19 — [public-ui-release](2026-09-19-public-ui-release/HANDOFF.md)** — PR #3 merged; full-stack production redeployed and public alias verified anonymously; SSO set to preview-only
 
 - **2026-09-11 — [vercel-live-and-ci-repair](2026-09-11-vercel-live-and-ci-repair/HANDOFF.md)** — ExamVault LIVE (SPA+API one Vercel project, Neon), CI green, issues #1+#2 closed
 
